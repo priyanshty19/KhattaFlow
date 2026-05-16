@@ -16,6 +16,12 @@ export async function POST(req: Request) {
   }
 
   const clerkUser = await currentUser()
+  const email = clerkUser?.emailAddresses[0]?.emailAddress ?? ''
+
+  // Remove any orphaned record with the same email but a different Clerk ID
+  if (email) {
+    await prisma.user.deleteMany({ where: { email, id: { not: userId } } })
+  }
 
   await prisma.$transaction(async (tx) => {
     // Upsert user record
@@ -23,7 +29,7 @@ export async function POST(req: Request) {
       where: { id: userId },
       create: {
         id: userId,
-        email: clerkUser?.emailAddresses[0]?.emailAddress ?? '',
+        email,
         name: clerkUser?.fullName ?? null,
         monthlySalary: salary ?? null,
         savingsGoalPct,

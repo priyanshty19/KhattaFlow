@@ -11,28 +11,21 @@ export async function GET(_req: Request) {
 
   const existing = await prisma.category.count({ where: { userId } })
   if (existing === 0) {
-    try {
-      const clerkUser = await currentUser()
-      await prisma.user.upsert({
-        where: { id: userId },
-        create: {
-          id: userId,
-          email: clerkUser?.emailAddresses[0]?.emailAddress ?? '',
-          name: clerkUser?.fullName ?? null,
-          savingsGoalPct: 0.20,
-        },
-        update: {},
-      })
-      await prisma.category.createMany({
-        data: DEFAULT_CATEGORIES.map(c => ({ ...c, userId, type: c.type as any })),
-      })
-    } catch (e: any) {
-      return NextResponse.json({
-        error: e.message,
-        code: e.code,
-        meta: e.meta,
-      }, { status: 500 })
+    const clerkUser = await currentUser()
+    const email = clerkUser?.emailAddresses[0]?.emailAddress ?? ''
+    // Remove any orphaned record with the same email but a different Clerk ID
+    // (happens when the user signed up during a broken deployment period)
+    if (email) {
+      await prisma.user.deleteMany({ where: { email, id: { not: userId } } })
     }
+    await prisma.user.upsert({
+      where: { id: userId },
+      create: { id: userId, email, name: clerkUser?.fullName ?? null, savingsGoalPct: 0.20 },
+      update: {},
+    })
+    await prisma.category.createMany({
+      data: DEFAULT_CATEGORIES.map(c => ({ ...c, userId, type: c.type as any })),
+    })
   } else {
     // One-time migration: backfill groups only for system/default categories that
     // have never had a group set AND have not been manually ungrouped by the user.
