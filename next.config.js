@@ -3,6 +3,7 @@ const nextConfig = {
   experimental: {
     typedRoutes: true,
   },
+  serverExternalPackages: ['@prisma/client', 'prisma'],
 }
 
 module.exports = nextConfig
