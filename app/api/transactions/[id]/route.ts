@@ -7,7 +7,7 @@ import { updateTransactionSchema } from '@/lib/validations/transaction'
 import { updateMonthlySummary } from '@/lib/engines/summary-engine'
 
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
-  const { userId } = auth()
+  const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const transaction = await prisma.transaction.findFirst({
@@ -19,7 +19,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
 }
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-  const { userId } = auth()
+  const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const existing = await prisma.transaction.findFirst({
@@ -64,7 +64,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 }
 
 export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
-  const { userId } = auth()
+  const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const existing = await prisma.transaction.findFirst({

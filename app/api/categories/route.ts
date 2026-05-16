@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 import { DEFAULT_CATEGORIES } from '@/constants/categories'
 
 export async function GET(_req: Request) {
-  const { userId } = auth()
+  const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const existing = await prisma.category.count({ where: { userId } })
@@ -61,7 +61,7 @@ export async function GET(_req: Request) {
 }
 
 export async function POST(req: Request) {
-  const { userId } = auth()
+  const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json().catch(() => ({}))

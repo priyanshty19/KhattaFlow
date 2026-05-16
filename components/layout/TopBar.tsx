@@ -30,7 +30,7 @@ export function TopBar({ title, month, onMonthChange, actions, className }: TopB
         <button className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors">
           <Bell className="w-4 h-4" />
         </button>
-        <UserButton afterSignOutUrl="/sign-in" />
+        <UserButton />
       </div>
     </header>
   )

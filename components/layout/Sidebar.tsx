@@ -80,7 +80,7 @@ export function Sidebar() {
         ))}
 
         <div className="flex items-center gap-3 px-3 py-2.5">
-          <UserButton afterSignOutUrl="/sign-in" />
+          <UserButton />
           <span className="text-xs text-zinc-500">Account</span>
         </div>
       </div>

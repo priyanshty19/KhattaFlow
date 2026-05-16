@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 import type { CategoryTemplate } from '@/constants/categories'
 
 export async function POST(req: Request) {
-  const { userId } = auth()
+  const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
