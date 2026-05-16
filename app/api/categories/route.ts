@@ -12,21 +12,19 @@ export async function GET(_req: Request) {
   const existing = await prisma.category.count({ where: { userId } })
   if (existing === 0) {
     const clerkUser = await currentUser()
-    await Promise.all([
-      prisma.user.upsert({
-        where: { id: userId },
-        create: {
-          id: userId,
-          email: clerkUser?.emailAddresses[0]?.emailAddress ?? '',
-          name: clerkUser?.fullName ?? null,
-          savingsGoalPct: 0.20,
-        },
-        update: {},
-      }),
-      prisma.category.createMany({
-        data: DEFAULT_CATEGORIES.map(c => ({ ...c, userId, type: c.type as any })),
-      }),
-    ])
+    await prisma.user.upsert({
+      where: { id: userId },
+      create: {
+        id: userId,
+        email: clerkUser?.emailAddresses[0]?.emailAddress ?? '',
+        name: clerkUser?.fullName ?? null,
+        savingsGoalPct: 0.20,
+      },
+      update: {},
+    })
+    await prisma.category.createMany({
+      data: DEFAULT_CATEGORIES.map(c => ({ ...c, userId, type: c.type as any })),
+    })
   } else {
     // One-time migration: backfill groups only for system/default categories that
     // have never had a group set AND have not been manually ungrouped by the user.
