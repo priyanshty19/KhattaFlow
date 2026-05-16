@@ -1,0 +1,127 @@
+'use client'
+import { useState } from 'react'
+import { useUser } from '@clerk/nextjs'
+import { toast } from 'sonner'
+import { User, Target, Tag, IndianRupee } from 'lucide-react'
+import { toPaise } from '@/lib/utils/currency'
+import { TopBar } from '@/components/layout/TopBar'
+import { CategoryManager } from '@/components/domain/settings/CategoryManager'
+
+export default function SettingsPage() {
+  const { user } = useUser()
+  const [salary, setSalary] = useState('')
+  const [goalPct, setGoalPct] = useState(20)
+  const [saving, setSaving] = useState(false)
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      await fetch('/api/user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          monthlySalary: salary ? toPaise(salary) : undefined,
+          savingsGoalPct: goalPct / 100,
+        }),
+      })
+      toast.success('Settings saved')
+    } catch {
+      toast.error('Failed to save')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const salaryNum = parseFloat(salary) || 0
+  const targetSavings = Math.round(salaryNum * goalPct / 100)
+
+  return (
+    <>
+      <TopBar title="Settings" />
+      <div className="flex flex-col gap-6 px-8 py-6 max-w-2xl">
+        <div>
+          <h2 className="text-xl font-semibold text-zinc-100">Settings</h2>
+          <p className="text-sm text-zinc-400 mt-0.5">Manage your profile, goals, and categories.</p>
+        </div>
+
+        {/* Profile */}
+        <div className="bg-zinc-900 border border-zinc-600/40 rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-5">
+            <User className="w-4 h-4 text-zinc-400" />
+            <h3 className="text-sm font-semibold text-zinc-200">Profile</h3>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs text-zinc-500 mb-1.5 block">Name</label>
+              <p className="text-sm text-zinc-300 bg-zinc-800/50 px-3 py-2.5 rounded-lg">
+                {user?.fullName ?? '—'}
+              </p>
+            </div>
+            <div>
+              <label className="text-xs text-zinc-500 mb-1.5 block">Email</label>
+              <p className="text-sm text-zinc-300 bg-zinc-800/50 px-3 py-2.5 rounded-lg">
+                {user?.primaryEmailAddress?.emailAddress ?? '—'}
+              </p>
+            </div>
+            <div>
+              <label className="text-xs text-zinc-500 mb-1.5 block">Monthly take-home salary (₹)</label>
+              <div className="relative">
+                <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+                <input
+                  type="number"
+                  placeholder="108500"
+                  value={salary}
+                  onChange={e => setSalary(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2.5 bg-zinc-800 border border-zinc-600/40 rounded-lg text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50 transition-colors tabular-nums"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Savings Goal */}
+        <div className="bg-zinc-900 border border-zinc-600/40 rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-5">
+            <Target className="w-4 h-4 text-zinc-400" />
+            <h3 className="text-sm font-semibold text-zinc-200">Savings Goal</h3>
+          </div>
+          <div className="flex items-baseline gap-2 mb-3">
+            <span className="text-4xl font-bold text-emerald-400 tabular-nums">{goalPct}%</span>
+            <span className="text-zinc-500 text-sm">of income</span>
+            {targetSavings > 0 && (
+              <span className="text-xs text-zinc-600 ml-2">= ₹{targetSavings.toLocaleString('en-IN')}/month</span>
+            )}
+          </div>
+          <input
+            type="range" min={5} max={50} step={5}
+            value={goalPct} onChange={e => setGoalPct(Number(e.target.value))}
+            className="w-full accent-emerald-500 mb-2"
+          />
+          <div className="flex justify-between text-xs text-zinc-600">
+            <span>5% (minimal)</span><span>20% (recommended)</span><span>50% (aggressive)</span>
+          </div>
+        </div>
+
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 disabled:bg-zinc-800 disabled:text-zinc-600 text-zinc-950 rounded-xl font-semibold text-sm transition-all"
+        >
+          {saving ? 'Saving…' : 'Save Settings'}
+        </button>
+
+        {/* Categories */}
+        <div className="bg-zinc-900 border border-zinc-600/40 rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-5">
+            <Tag className="w-4 h-4 text-zinc-400" />
+            <div>
+              <h3 className="text-sm font-semibold text-zinc-200">Categories</h3>
+              <p className="text-xs text-zinc-500 mt-0.5">Add, edit, or delete your spending categories.</p>
+            </div>
+          </div>
+          <CategoryManager />
+        </div>
+      </div>
+    </>
+  )
+}

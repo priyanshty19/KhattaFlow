@@ -1,0 +1,176 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id             String   @id // Clerk userId
+  email          String   @unique
+  name           String?
+  monthlySalary  Int?     // paise
+  currency       String   @default("INR")
+  savingsGoalPct Float    @default(0.20)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  categories      Category[]
+  transactions    Transaction[]
+  budgets         Budget[]
+  recurringRules  RecurringRule[]
+  imports         Import[]
+  monthlySummaries MonthlySummary[]
+
+  @@map("users")
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  slug      String
+  type      CategoryType
+  color     String
+  icon      String?
+  isFixed   Boolean  @default(false)
+  isSystem  Boolean  @default(false)
+  sortOrder Int      @default(0)
+  group     String?
+  createdAt DateTime @default(now())
+  deletedAt DateTime?
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  budgets      Budget[]
+  recurringRules RecurringRule[]
+
+  @@unique([userId, slug])
+  @@map("categories")
+}
+
+enum CategoryType {
+  income
+  expense
+  investment
+  savings
+}
+
+model Transaction {
+  id            String   @id @default(uuid())
+  userId        String
+  categoryId    String
+  amount        Int      // paise, always positive
+  type          CategoryType
+  paymentMethod PaymentMethod?
+  description   String?
+  notes         String?
+  date          DateTime @db.Date
+  month         String   // '2026-05' — computed on insert
+  year          Int      // 2026 — computed on insert
+  isRecurring   Boolean  @default(false)
+  recurringId   String?
+  importId      String?
+  metadata      Json     @default("{}")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category  @relation(fields: [categoryId], references: [id])
+  import   Import?   @relation(fields: [importId], references: [id])
+
+  @@index([userId, month])
+  @@index([userId, year])
+  @@index([categoryId])
+  @@index([date(sort: Desc)])
+  @@map("transactions")
+}
+
+enum PaymentMethod {
+  cash
+  credit_card
+  upi
+  bank_transfer
+  auto_debit
+}
+
+model Budget {
+  id         String   @id @default(uuid())
+  userId     String
+  categoryId String
+  month      String   // '2026-05'
+  amount     Int      // paise
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([userId, categoryId, month])
+  @@index([userId, month])
+  @@map("budgets")
+}
+
+model RecurringRule {
+  id          String    @id @default(uuid())
+  userId      String
+  categoryId  String
+  amount      Int       // paise
+  description String?
+  frequency   String    // 'monthly' | 'weekly'
+  dayOfMonth  Int?      // 1-31
+  startDate   DateTime  @db.Date
+  endDate     DateTime? @db.Date
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@map("recurring_rules")
+}
+
+model Import {
+  id           String   @id @default(uuid())
+  userId       String
+  filename     String
+  rowCount     Int
+  status       ImportStatus
+  errorLog     Json     @default("[]")
+  createdAt    DateTime @default(now())
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@map("imports")
+}
+
+enum ImportStatus {
+  pending
+  success
+  failed
+}
+
+model MonthlySummary {
+  id                 String   @id @default(uuid())
+  userId             String
+  month              String   // '2026-05'
+  totalIncome        Int      @default(0)
+  totalExpenses      Int      @default(0)
+  totalSavings       Int      @default(0)
+  totalInvestments   Int      @default(0)
+  netBalance         Int      @default(0)
+  transactionCount   Int      @default(0)
+  computedAt         DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month])
+  @@index([userId])
+  @@map("monthly_summaries")
+}

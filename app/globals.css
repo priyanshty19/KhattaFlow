@@ -1,0 +1,74 @@
+/* app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* PaisaFlow — Lustre Dark (green-tinted) */
+    --background: 144 22% 7%;       /* #0e1511 */
+    --foreground: 138 10% 88%;      /* #dde4dd */
+    --card: 144 11% 11%;            /* #1a211d */
+    --card-foreground: 138 10% 88%;
+    --popover: 144 11% 11%;
+    --popover-foreground: 138 10% 88%;
+    --primary: 157 68% 59%;         /* #4edea3 */
+    --primary-foreground: 160 100% 11%; /* #003824 */
+    --secondary: 144 11% 11%;
+    --secondary-foreground: 138 10% 88%;
+    --muted: 144 11% 11%;
+    --muted-foreground: 143 8% 55%; /* #86948a */
+    --accent: 144 9% 16%;           /* #242c27 */
+    --accent-foreground: 138 10% 88%;
+    --destructive: 3 100% 85%;      /* #ffb3af */
+    --destructive-foreground: 3 83% 22%;
+    --border: 150 11% 26%;          /* #3c4a42 */
+    --input: 144 9% 16%;
+    --ring: 157 68% 59%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground; }
+
+  /* Tabular numbers for all financial amounts */
+  .amount, [data-amount] {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+}
+
+@layer utilities {
+  /* Glassmorphism card variant */
+  .glass-card {
+    @apply bg-zinc-900/60 backdrop-blur-sm border border-zinc-800/50;
+  }
+
+  /* Gradient text for highlight numbers */
+  .gradient-text-green {
+    @apply bg-gradient-to-r from-emerald-400 to-green-300 bg-clip-text text-transparent;
+  }
+
+  .gradient-text-red {
+    @apply bg-gradient-to-r from-red-400 to-rose-300 bg-clip-text text-transparent;
+  }
+
+  /* Shimmer loading skeleton */
+  .skeleton {
+    @apply bg-gradient-to-r from-zinc-800 via-zinc-700/60 to-zinc-800;
+    background-size: 200% 100%;
+    animation: shimmer 1.5s linear infinite;
+  }
+
+  /* Budget bar status colors */
+  .budget-safe   { @apply bg-emerald-500; }
+  .budget-warn   { @apply bg-amber-500; }
+  .budget-over   { @apply bg-red-500; }
+
+  /* Scrollbar styling */
+  .custom-scroll::-webkit-scrollbar { width: 4px; }
+  .custom-scroll::-webkit-scrollbar-track { @apply bg-transparent; }
+  .custom-scroll::-webkit-scrollbar-thumb { @apply bg-zinc-700 rounded-full; }
+}
