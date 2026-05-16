@@ -17,6 +17,7 @@ model User {
   monthlySalary  Int?     // paise
   currency       String   @default("INR")
   savingsGoalPct Float    @default(0.20)
+  companyName    String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

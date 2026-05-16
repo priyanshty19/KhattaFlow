@@ -1,9 +1,9 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { toast } from 'sonner'
-import { User, Target, Tag, IndianRupee } from 'lucide-react'
-import { toPaise } from '@/lib/utils/currency'
+import { User, Target, Tag, IndianRupee, Building2 } from 'lucide-react'
+import { toPaise, toRupees } from '@/lib/utils/currency'
 import { TopBar } from '@/components/layout/TopBar'
 import { CategoryManager } from '@/components/domain/settings/CategoryManager'
 
@@ -11,7 +11,19 @@ export default function SettingsPage() {
   const { user } = useUser()
   const [salary, setSalary] = useState('')
   const [goalPct, setGoalPct] = useState(20)
+  const [companyName, setCompanyName] = useState('')
   const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/user')
+      .then(r => r.json())
+      .then(data => {
+        if (data?.monthlySalary) setSalary(String(toRupees(data.monthlySalary)))
+        if (data?.savingsGoalPct) setGoalPct(Math.round(data.savingsGoalPct * 100))
+        if (data?.companyName) setCompanyName(data.companyName)
+      })
+      .catch(() => {})
+  }, [])
 
   const handleSave = async () => {
     setSaving(true)
@@ -22,6 +34,7 @@ export default function SettingsPage() {
         body: JSON.stringify({
           monthlySalary: salary ? toPaise(salary) : undefined,
           savingsGoalPct: goalPct / 100,
+          companyName: companyName || null,
         }),
       })
       toast.success('Settings saved')
@@ -62,6 +75,19 @@ export default function SettingsPage() {
               <p className="text-sm text-zinc-300 bg-zinc-800/50 px-3 py-2.5 rounded-lg">
                 {user?.primaryEmailAddress?.emailAddress ?? '—'}
               </p>
+            </div>
+            <div>
+              <label className="text-xs text-zinc-500 mb-1.5 block">Company / Employer</label>
+              <div className="relative">
+                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="e.g. Google, Infosys"
+                  value={companyName}
+                  onChange={e => setCompanyName(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2.5 bg-zinc-800 border border-zinc-600/40 rounded-lg text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50 transition-colors"
+                />
+              </div>
             </div>
             <div>
               <label className="text-xs text-zinc-500 mb-1.5 block">Monthly take-home salary (₹)</label>

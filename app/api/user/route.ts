@@ -31,6 +31,7 @@ export async function POST(req: Request) {
       ...(body.name && { name: body.name }),
       ...(body.monthlySalary && { monthlySalary: body.monthlySalary }),
       ...(body.savingsGoalPct && { savingsGoalPct: body.savingsGoalPct }),
+      ...(body.companyName !== undefined && { companyName: body.companyName || null }),
     },
   })
 

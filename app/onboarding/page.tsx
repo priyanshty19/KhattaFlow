@@ -98,6 +98,7 @@ export default function OnboardingPage() {
           salary: salary ? parseFloat(salary) : undefined,
           savingsGoalPct: savingsGoal / 100,
           categories: selected,
+          companyName: incomeName || null,
         }),
       })
       setStep('done')

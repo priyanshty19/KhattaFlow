@@ -9,10 +9,11 @@ export async function POST(req: Request) {
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
-  const { salary, savingsGoalPct, categories } = body as {
+  const { salary, savingsGoalPct, categories, companyName } = body as {
     salary?: number
     savingsGoalPct: number
     categories: CategoryTemplate[]
+    companyName?: string
   }
 
   const clerkUser = await currentUser()
@@ -33,10 +34,12 @@ export async function POST(req: Request) {
         name: clerkUser?.fullName ?? null,
         monthlySalary: salary ?? null,
         savingsGoalPct,
+        companyName: companyName ?? null,
       },
       update: {
         monthlySalary: salary ?? null,
         savingsGoalPct,
+        companyName: companyName ?? null,
       },
     })
 
