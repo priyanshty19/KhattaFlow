@@ -1,40 +1,24 @@
 export const dynamic = 'force-dynamic'
-import { auth, currentUser } from '@clerk/nextjs/server'
+import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
 export async function GET() {
-  const { userId } = await auth()
-  if (!userId) return NextResponse.json({ error: 'Not logged in' }, { status: 401 })
+  try {
+    const { userId } = await auth()
+    if (!userId) return NextResponse.json({ error: 'Not logged in' }, { status: 401 })
 
-  const clerkUser = await currentUser()
-  const email = clerkUser?.emailAddresses[0]?.emailAddress
+    const userRecord = await prisma.user.findUnique({ where: { id: userId } }).catch(e => ({ _err: String(e) }))
+    const totalCount = await prisma.category.count({ where: { userId } }).catch(e => -1)
+    const visibleCount = await prisma.category.count({ where: { userId, deletedAt: null } }).catch(e => -2)
 
-  const [userRecord, totalCategories, nonDeletedCategories, categories] = await Promise.all([
-    prisma.user.findUnique({ where: { id: userId } }),
-    prisma.category.count({ where: { userId } }),
-    prisma.category.count({ where: { userId, deletedAt: null } }),
-    prisma.category.findMany({
+    const cats = await prisma.category.findMany({
       where: { userId },
-      select: { id: true, name: true, type: true, slug: true, deletedAt: true, group: true },
-      orderBy: { type: 'asc' },
-    }),
-  ])
+      select: { id: true, name: true, type: true, slug: true, deletedAt: true },
+    }).catch(e => ({ _err: String(e) }))
 
-  // Simulate the auto-seed decision
-  const wouldAutoSeed = nonDeletedCategories === 0
-
-  return NextResponse.json({
-    userId,
-    email,
-    userRecord: userRecord
-      ? { id: userRecord.id, email: userRecord.email, investmentStyle: (userRecord as any).investmentStyle, savingsGoalPct: userRecord.savingsGoalPct }
-      : null,
-    counts: {
-      total: totalCategories,
-      nonDeleted: nonDeletedCategories,
-      wouldAutoSeed,
-    },
-    categories,
-  })
+    return NextResponse.json({ userId, userRecord, totalCount, visibleCount, cats })
+  } catch (e) {
+    return NextResponse.json({ fatalError: String(e) }, { status: 500 })
+  }
 }
