@@ -14,13 +14,13 @@ export default function AnalyticsPage() {
   return (
     <>
       <TopBar title="Analytics" month={month} onMonthChange={setMonth} />
-      <div className="flex flex-col gap-6 px-8 py-6 max-w-[1400px]">
+      <div className="flex flex-col gap-4 md:gap-6 px-4 md:px-6 lg:px-8 py-4 md:py-6 max-w-[1400px]">
         <div>
-          <h2 className="text-xl font-semibold text-zinc-100">Analytics</h2>
+          <h2 className="text-lg md:text-xl font-semibold text-zinc-100">Analytics</h2>
           <p className="text-sm text-zinc-400 mt-0.5">Patterns in your spending, visible at a glance.</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           <div className="lg:col-span-2">
             <SpendingTrendChart months={6} />
           </div>
@@ -29,7 +29,7 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           <CategoryBreakdownChart month={month} />
           <InvestmentAllocationChart month={month} />
         </div>

@@ -29,14 +29,14 @@ export default function TransactionsPage() {
         actions={
           <button
             onClick={() => openQuickAdd()}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold text-sm transition-all active:scale-95"
+            className="hidden md:flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold text-sm transition-all active:scale-95"
           >
             <Plus className="w-4 h-4" />
             Add Transaction
           </button>
         }
       />
-      <div className="px-8 py-6 space-y-5 max-w-[1200px]">
+      <div className="px-4 md:px-6 lg:px-8 py-4 md:py-6 space-y-4 md:space-y-5 max-w-[1200px]">
         <TransactionFilter value={filter} onChange={setFilter} />
         <TransactionList month={month} filter={filter} />
       </div>

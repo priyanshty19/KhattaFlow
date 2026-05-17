@@ -14,12 +14,12 @@ export default function DashboardPage() {
   return (
     <>
       <TopBar title="Overview" month={month} onMonthChange={setMonth} />
-      <div className="flex flex-col gap-8 px-8 py-6 max-w-[1400px]">
+      <div className="flex flex-col gap-4 md:gap-8 px-4 md:px-6 lg:px-8 py-4 md:py-6 max-w-[1400px]">
         <Suspense fallback={<StatCardSkeleton />}>
           <DashboardPulse month={month} />
         </Suspense>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           <div className="lg:col-span-2">
             <Suspense fallback={<div className="skeleton h-64 rounded-xl" />}>
               <DashboardBudgetZone month={month} />

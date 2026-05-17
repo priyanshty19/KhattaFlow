@@ -26,7 +26,7 @@ export function Sidebar() {
   const { openQuickAdd } = useUIStore()
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-64 z-40 flex flex-col bg-zinc-950 border-r border-zinc-600/40">
+    <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 z-40 flex-col bg-zinc-950 border-r border-zinc-600/40">
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-5 py-6">
         <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center shrink-0">
