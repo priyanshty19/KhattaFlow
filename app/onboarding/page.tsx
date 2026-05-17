@@ -108,6 +108,7 @@ export default function OnboardingPage() {
         }),
       })
       setStep('done')
+      setTimeout(() => router.push('/'), 2000)
     } catch (e) {
       console.error(e)
     } finally {
