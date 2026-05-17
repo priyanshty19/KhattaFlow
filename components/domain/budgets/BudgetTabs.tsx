@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCategories, useBudgets, useUpsertBudget, useUpdateCategoryGroup, useUpdateCategory, useBudgetStatus } from '@/lib/queries'
 import { toast } from 'sonner'
@@ -22,6 +22,20 @@ export function BudgetTabs({ month }: { month: string }) {
   const [localBuckets, setLocalBuckets] = useState<Record<string, string[]>>({})
 
   const { data: categories = [] } = useCategories()
+
+  // Auto-switch to first tab that has categories (handles users who deselected
+  // expense categories during onboarding and land on an empty Debt tab)
+  useEffect(() => {
+    if ((categories as any[]).length === 0) return
+    const currentHasItems = (categories as any[]).some((c: any) => c.type === activeTab)
+    if (!currentHasItems) {
+      const first = TABS.find(t => (categories as any[]).some((c: any) => c.type === t.id))
+      if (first) setActiveTab(first.id)
+    }
+    // Only run on initial category load, not on every tab switch
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [(categories as any[]).length])
+
   const { data: budgets = [] } = useBudgets(month)
   const { data: statusData } = useBudgetStatus(month)
   const { mutate: upsertBudget } = useUpsertBudget()

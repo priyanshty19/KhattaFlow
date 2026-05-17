@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, Pencil, Trash2, Check, X } from 'lucide-react'
 import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '@/lib/queries'
 import { cn } from '@/lib/utils/cn'
@@ -240,6 +240,18 @@ export function CategoryManager() {
   const [activeTab, setActiveTab] = useState('expense')
   const [showAdd, setShowAdd] = useState(false)
   const { data: allCategories = [], refetch } = useCategories()
+
+  // Auto-switch to first populated tab so users who skipped expense categories
+  // during onboarding don't land on an empty "Debt" view
+  useEffect(() => {
+    if ((allCategories as any[]).length === 0) return
+    const currentHasItems = (allCategories as any[]).some((c: any) => c.type === activeTab)
+    if (!currentHasItems) {
+      const first = TABS.find(t => (allCategories as any[]).some((c: any) => c.type === t.id))
+      if (first) setActiveTab(first.id)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [(allCategories as any[]).length])
 
   const tabCategories = (allCategories as any[]).filter((c: any) => c.type === activeTab)
 
