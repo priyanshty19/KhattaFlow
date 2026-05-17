@@ -1,8 +1,7 @@
 'use client'
 import { Target, TrendingUp } from 'lucide-react'
 import { BudgetBar } from '@/components/domain/budgets/BudgetBar'
-import { PredictionCard } from './PredictionCard'
-import { useBudgetStatus, usePrediction } from '@/lib/queries'
+import { useBudgetStatus } from '@/lib/queries'
 import { EmptyState } from '@/components/shared/EmptyState'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -68,8 +67,6 @@ export function DashboardBudgetZone({ month }: DashboardBudgetZoneProps) {
         )}
       </div>
 
-      {/* Prediction */}
-      <PredictionCard month={month} />
     </div>
   )
 }
