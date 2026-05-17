@@ -57,7 +57,8 @@ export default function OnboardingPage() {
   const [commitments, setCommitments] = useState<string[]>([])
   const [savingsGoal, setSavingsGoal] = useState(20)
   const [investmentStyle, setInvestmentStyle] = useState<InvestmentStyle>('balanced')
-  const [selectedSlugs, setSelectedSlugs] = useState<Set<string> | null>(null)
+  // Track by NAME (stable) not slug (has timestamp — changes when profile/incomeName change)
+  const [deselectedNames, setDeselectedNames] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(false)
 
   const stepIndex = STEPS.indexOf(step)
@@ -67,30 +68,34 @@ export default function OnboardingPage() {
     [profile, incomeName, commitments, investmentStyle]
   )
 
+  // Which slugs are currently "active" — all slugs except those whose name is deselected
   const activeSlugs: Set<string> = useMemo(() => {
-    if (selectedSlugs !== null) return selectedSlugs
-    return new Set(categories.map(c => c.slug))
-  }, [selectedSlugs, categories])
+    return new Set(categories.filter(c => !deselectedNames.has(c.name)).map(c => c.slug))
+  }, [categories, deselectedNames])
 
   const toggleSlug = (slug: string) => {
-    const next = new Set(activeSlugs)
-    if (next.has(slug)) next.delete(slug)
-    else next.add(slug)
-    setSelectedSlugs(next)
+    const cat = categories.find(c => c.slug === slug)
+    if (!cat) return
+    const next = new Set(deselectedNames)
+    if (next.has(cat.name)) next.delete(cat.name)
+    else next.add(cat.name)
+    setDeselectedNames(next)
   }
 
   const toggleCommitment = (id: string) => {
     setCommitments(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     )
-    setSelectedSlugs(null)
+    // Commitment changes add/remove entire category groups — reset deselections
+    setDeselectedNames(new Set())
   }
 
   const handleFinish = async () => {
     setStep('setup')
     setLoading(true)
     try {
-      const selected: CategoryTemplate[] = categories.filter(c => activeSlugs.has(c.slug))
+      // Filter by name (stable) — immune to slug timestamp changes from navigation
+      const selected: CategoryTemplate[] = categories.filter(c => !deselectedNames.has(c.name))
       await fetch('/api/onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -334,7 +339,7 @@ export default function OnboardingPage() {
               {INVESTMENT_OPTIONS.map(({ id, label, desc, icon: Icon }) => (
                 <button
                   key={id}
-                  onClick={() => { setInvestmentStyle(id); setSelectedSlugs(null) }}
+                  onClick={() => { setInvestmentStyle(id); setDeselectedNames(new Set()) }}
                   className={cn(
                     'w-full flex items-center gap-4 p-4 rounded-xl border text-left transition-all',
                     investmentStyle === id
