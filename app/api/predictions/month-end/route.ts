@@ -17,9 +17,8 @@ export async function GET(req: Request) {
     prisma.monthlySummary.findUnique({ where: { userId_month: { userId, month } } }),
     prisma.budget.findMany({
       where: { userId, month },
-      include: { category: { select: { isFixed: true, id: true } } },
+      include: { category: { select: { isFixed: true, id: true, type: true } } },
     }),
-    // Actual spending per category for fixed categories this month
     prisma.transaction.groupBy({
       by: ['categoryId'],
       where: {
@@ -36,25 +35,22 @@ export async function GET(req: Request) {
   const daysElapsed = getDaysElapsed(month)
   const daysInMonth = getDaysInMonth(month)
 
-  // Build a map of categoryId → amount already spent
   const spentByCategoryId = new Map(
     fixedSpend.map(s => [s.categoryId, s._sum.amount ?? 0])
   )
 
-  // Only count fixed budget amounts NOT yet paid this month
+  // Only count unpaid fixed EXPENSE commitments (savings/investments are handled separately)
   const fixedCommitmentsRemaining = fixedBudgets
-    .filter(b => b.category.isFixed)
+    .filter(b => b.category.isFixed && b.category.type === 'expense')
     .reduce((sum, b) => {
       const alreadySpent = spentByCategoryId.get(b.category.id) ?? 0
       return sum + Math.max(0, b.amount - alreadySpent)
     }, 0)
 
-  // Total outflow includes expenses + savings + investments
-  const currentOutflow = summary.totalExpenses + summary.totalSavings + summary.totalInvestments
-
   const prediction = PredictionEngine.predictMonthEnd({
-    currentExpenses: currentOutflow,
-    currentIncome: summary.totalIncome,
+    currentNetBalance: summary.netBalance,
+    currentExpenses: summary.totalExpenses,  // variable expense burn rate only
+    totalIncome: summary.totalIncome,
     daysElapsed,
     daysInMonth,
     fixedCommitmentsRemaining,
