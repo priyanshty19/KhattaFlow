@@ -99,6 +99,7 @@ export default function OnboardingPage() {
           savingsGoalPct: savingsGoal / 100,
           categories: selected,
           companyName: incomeName || null,
+          investmentStyle,
         }),
       })
       setStep('done')

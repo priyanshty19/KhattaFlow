@@ -9,12 +9,11 @@ export async function GET(_req: Request) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const existing = await prisma.category.count({ where: { userId } })
+  // Count only non-deleted categories — this is what the user actually sees
+  const existing = await prisma.category.count({ where: { userId, deletedAt: null } })
   if (existing === 0) {
     const clerkUser = await currentUser()
     const email = clerkUser?.emailAddresses[0]?.emailAddress ?? ''
-    // Remove any orphaned record with the same email but a different Clerk ID
-    // (happens when the user signed up during a broken deployment period)
     if (email) {
       await prisma.user.deleteMany({ where: { email, id: { not: userId } } })
     }
@@ -23,9 +22,14 @@ export async function GET(_req: Request) {
       create: { id: userId, email, name: clerkUser?.fullName ?? null, savingsGoalPct: 0.20 },
       update: {},
     })
-    await prisma.category.createMany({
-      data: DEFAULT_CATEGORIES.map(c => ({ ...c, userId, type: c.type as any })),
-    })
+    try {
+      await prisma.category.createMany({
+        data: DEFAULT_CATEGORIES.map(c => ({ ...c, userId, type: c.type as any })),
+        skipDuplicates: true,
+      })
+    } catch (e) {
+      console.error('[categories auto-seed] createMany failed:', e)
+    }
   } else {
     // One-time migration: backfill groups only for system/default categories that
     // have never had a group set AND have not been manually ungrouped by the user.

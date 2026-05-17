@@ -239,7 +239,7 @@ function AddCategoryForm({ type, onDone }: { type: string; onDone: () => void })
 export function CategoryManager() {
   const [activeTab, setActiveTab] = useState('expense')
   const [showAdd, setShowAdd] = useState(false)
-  const { data: allCategories = [], refetch } = useCategories()
+  const { data: allCategories = [], refetch, isLoading } = useCategories()
 
   // Auto-switch to first populated tab so users who skipped expense categories
   // during onboarding don't land on an empty "Debt" view
@@ -255,8 +255,23 @@ export function CategoryManager() {
 
   const tabCategories = (allCategories as any[]).filter((c: any) => c.type === activeTab)
 
+  const totalCategories = (allCategories as any[]).length
+
   return (
     <div className="space-y-4">
+      {/* Zero-category recovery banner */}
+      {!isLoading && totalCategories === 0 && (
+        <div className="flex items-center justify-between gap-4 px-4 py-3 bg-amber-500/10 border border-amber-500/30 rounded-xl">
+          <p className="text-sm text-amber-300">No categories found. Default categories will be restored automatically.</p>
+          <button
+            onClick={() => refetch()}
+            className="shrink-0 text-xs font-semibold text-amber-300 hover:text-amber-200 border border-amber-500/40 hover:border-amber-400/60 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            Reload
+          </button>
+        </div>
+      )}
+
       {/* Tab selector */}
       <div className="flex gap-2">
         {TABS.map(tab => (
