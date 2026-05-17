@@ -87,3 +87,14 @@ export function getLastNMonths(n: number): string[] {
   }
   return months
 }
+
+/** N months starting from `start` (inclusive) */
+export function getNextNMonths(start: string, n: number): string[] {
+  const months: string[] = []
+  let current = start
+  for (let i = 0; i < n; i++) {
+    months.push(current)
+    current = getNextMonth(current)
+  }
+  return months
+}

@@ -10,9 +10,6 @@ interface MonthSelectorProps {
 }
 
 export function MonthSelector({ value, onChange, className }: MonthSelectorProps) {
-  const currentMonth = getCurrentMonth()
-  const isCurrentMonth = value === currentMonth
-
   return (
     <div className={cn(
       'flex items-center gap-1 bg-zinc-900 border border-zinc-600/50 rounded-full px-1 py-1',
@@ -31,13 +28,7 @@ export function MonthSelector({ value, onChange, className }: MonthSelectorProps
 
       <button
         onClick={() => onChange(getNextMonth(value))}
-        disabled={isCurrentMonth}
-        className={cn(
-          'p-1 rounded-full transition-colors',
-          isCurrentMonth
-            ? 'text-zinc-700 cursor-not-allowed'
-            : 'hover:bg-zinc-700 text-zinc-400 hover:text-emerald-400'
-        )}
+        className="p-1 rounded-full hover:bg-zinc-700 text-zinc-400 hover:text-emerald-400 transition-colors"
       >
         <ChevronRight className="w-3.5 h-3.5" />
       </button>

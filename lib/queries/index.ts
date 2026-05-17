@@ -53,6 +53,26 @@ export function useBudgetStatus(month: string) {
   })
 }
 
+export function useBatchUpsertBudgets() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (entries: Array<{ categoryId: string; month: string; amount: number }>) => {
+      const res = await fetch('/api/budgets/batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entries }),
+      })
+      if (!res.ok) throw new Error('Failed to save budgets')
+      return res.json()
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['budgets'] })
+      toast.success('Budgets saved')
+    },
+    onError: () => toast.error('Failed to save budgets'),
+  })
+}
+
 export function useUpsertBudget() {
   const qc = useQueryClient()
   return useMutation({
