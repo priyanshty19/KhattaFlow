@@ -1,15 +1,16 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, ArrowLeftRight, PieChart, Target, Settings } from 'lucide-react'
+import { LayoutDashboard, ArrowLeftRight, PieChart, Target, CreditCard, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
 const NAV_ITEMS = [
-  { href: '/',             label: 'Dashboard',    icon: LayoutDashboard },
-  { href: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
-  { href: '/analytics',    label: 'Analytics',    icon: PieChart },
-  { href: '/budgets',      label: 'Budget',       icon: Target },
-  { href: '/settings',     label: 'Settings',     icon: Settings },
+  { href: '/',              label: 'Dashboard',    icon: LayoutDashboard },
+  { href: '/transactions',  label: 'Transactions', icon: ArrowLeftRight },
+  { href: '/analytics',     label: 'Analytics',    icon: PieChart },
+  { href: '/budgets',       label: 'Budget',       icon: Target },
+  { href: '/credit-cards',  label: 'Cards',        icon: CreditCard },
+  { href: '/settings',      label: 'Settings',     icon: Settings },
 ]
 
 export function BottomNav() {

@@ -3,17 +3,18 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, ArrowLeftRight, PieChart, Target,
-  Settings, Plus, Upload, Wallet,
+  CreditCard, Settings, Plus, Upload, Wallet,
 } from 'lucide-react'
 import { UserButton } from '@clerk/nextjs'
 import { cn } from '@/lib/utils/cn'
 import { useUIStore } from '@/stores/ui.store'
 
 const NAV_ITEMS: { href: string; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { href: '/',             label: 'Dashboard',    icon: LayoutDashboard },
-  { href: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
-  { href: '/analytics',    label: 'Analytics',    icon: PieChart },
-  { href: '/budgets',      label: 'Budget',       icon: Target },
+  { href: '/',              label: 'Dashboard',    icon: LayoutDashboard },
+  { href: '/transactions',  label: 'Transactions', icon: ArrowLeftRight },
+  { href: '/analytics',     label: 'Analytics',    icon: PieChart },
+  { href: '/budgets',       label: 'Budget',       icon: Target },
+  { href: '/credit-cards',  label: 'Credit Cards', icon: CreditCard },
 ]
 
 const BOTTOM_ITEMS: { href: string; label: string; icon: React.ComponentType<{ className?: string }> }[] = [

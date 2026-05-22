@@ -11,23 +11,33 @@ datasource db {
 }
 
 model User {
-  id             String   @id // Clerk userId
-  email          String   @unique
-  name           String?
-  monthlySalary  Int?     // paise
-  currency       String   @default("INR")
-  savingsGoalPct Float    @default(0.20)
+  id              String   @id // Clerk userId
+  email           String   @unique
+  name            String?
+  monthlySalary   Int?     // paise
+  currency        String   @default("INR")
+  savingsGoalPct  Float    @default(0.20)
   companyName     String?
   investmentStyle String?  // 'conservative' | 'balanced' | 'aggressive'
+  phone           String?  @unique
+  creditScore     Int?     // CIBIL score 300–900, captured at onboarding
+  employmentType  String?  // 'salaried' | 'self_employed' | 'business_owner' | 'student'
   createdAt       DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  updatedAt       DateTime @updatedAt
 
-  categories      Category[]
-  transactions    Transaction[]
-  budgets         Budget[]
-  recurringRules  RecurringRule[]
-  imports         Import[]
-  monthlySummaries MonthlySummary[]
+  categories           Category[]
+  transactions         Transaction[]
+  budgets              Budget[]
+  recurringRules       RecurringRule[]
+  imports              Import[]
+  monthlySummaries     MonthlySummary[]
+  otpVerifications     OtpVerification[]
+  oauthConnections     OAuthConnection[]
+  creditCardPreference        CreditCardPreference?
+  cardRecommendations         CardRecommendation[]
+  userCreditCards             UserCreditCard[]
+  cardRecommendationFeedbacks CardRecommendationFeedback[]
+  cardApplyIntents            CardApplyIntent[]
 
   @@map("users")
 }
@@ -176,4 +186,170 @@ model MonthlySummary {
   @@unique([userId, month])
   @@index([userId])
   @@map("monthly_summaries")
+}
+
+model OtpVerification {
+  id         String   @id @default(uuid())
+  identifier String
+  codeHash   String
+  sessionId  String   @unique @default(uuid())
+  expiresAt  DateTime
+  used       Boolean  @default(false)
+  userId     String?
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([identifier])
+  @@index([sessionId])
+  @@map("otp_verifications")
+}
+
+model OAuthConnection {
+  id             String   @id @default(uuid())
+  userId         String
+  provider       String
+  providerEmail  String
+  accessToken    String
+  refreshToken   String
+  tokenExpiresAt DateTime?
+  scopes         String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider, providerEmail])
+  @@map("oauth_connections")
+}
+
+// ─── CredWise / Credit Card Recommender ──────────────────────────────────────
+
+model CreditCard {
+  id                       String   @id @default(uuid())
+  cardName                 String
+  bank                     String
+  cardType                 String
+  creditScoreRequirement   Int      @default(0)
+  monthlyIncomeRequirement Int      @default(0)
+  joiningFee               Int      @default(0)
+  annualFee                Int      @default(0)
+  feeWaiverThreshold       Int      @default(0)
+  rewardType               String   // 'cashback' | 'points' | 'miles' | 'hybrid'
+  pointValue               Float    @default(0)
+  baseRewardRate           Float    @default(0)
+  categoryRewardRates      Json     @default("{}")
+  categoryCaps             Json     @default("{}")
+  signUpBonus              Int      @default(0)
+  signUpSpendRequired      Int      @default(0)
+  signUpWindowDays         Int      @default(0)
+  milestoneDependency      Boolean  @default(false)
+  minAnnualSpend           Int      @default(0)
+  milestoneBonus           Int      @default(0)
+  milestoneBenefitDesc     String?
+  loungeAccess             String   @default("none")
+  loungeVisitsPerYear      Int      @default(0)
+  forexMarkup              Float    @default(0)
+  fuelSurchargeWaiver      Boolean  @default(false)
+  bestForTags              String[]
+  features                 String?
+  spendingCategories       String[]
+  isActive                 Boolean  @default(true)
+  // v3 fields
+  platformCoverage         Float    @default(1.0)   // 0.0–1.0: fraction of category spend at special rate (merchant-specific cards)
+  platformNote             String?                   // e.g. "Only on Swiggy orders"
+  loungeValuePerVisit      Int      @default(700)   // ₹ per visit — domestic avg ₹700, intl ₹1200
+  milestones               Json     @default("[]")  // MilestoneTier[] — replaces single milestone fields
+  networkType              String   @default("Visa") // 'Visa' | 'Mastercard' | 'RuPay' | 'Amex' | 'Diners'
+  employmentRequirement    String   @default("any") // 'any' | 'salaried' | 'self_employed'
+  applyUrl                 String?                   // Direct application link
+  imageUrl                 String?                   // Card art image URL
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  @@index([bank])
+  @@index([isActive])
+  @@map("credit_cards")
+}
+
+// Lazy — only created when user first uses the Credit Card Recommender
+model CreditCardPreference {
+  id                   String   @id @default(uuid())
+  userId               String   @unique
+  joiningFeePreference String   @default("no_concern") // 'no_fee' | 'low_fee' | 'no_concern'
+  preferredBanks       String[]
+  updatedAt            DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("credit_card_preferences")
+}
+
+// Per-user recommendation cache — one entry per month, refreshed on demand
+model CardRecommendation {
+  id              String   @id @default(uuid())
+  userId          String
+  month           String   // '2026-05'
+  recommendations Json     // ScoredCard[] top 7
+  userSnapshot    Json     // UserProfile used for this run
+  spendSource     String   @default("manual") // 'auto' | 'manual'
+  computedAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month])
+  @@index([userId])
+  @@map("card_recommendations")
+}
+
+// Feedback on card recommendations — used for ML training
+model CardRecommendationFeedback {
+  id               String   @id @default(uuid())
+  userId           String
+  liked            Boolean  // true = Yes, false = No
+  preferredCard    String?  // free-text: "which card would you prefer?" (only when liked=false)
+  recommendedCards String[] // card IDs of what was shown
+  month            String   // '2026-05' — which recommendation set this was for
+  createdAt        DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("card_recommendation_feedback")
+}
+
+// Apply intent — logged every time a user clicks "Apply Now" on a card
+model CardApplyIntent {
+  id        String   @id @default(uuid())
+  userId    String
+  cardId    String
+  cardName  String
+  bank      String
+  month     String   // '2026-05'
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([cardId])
+  @@map("card_apply_intents")
+}
+
+// User's own cards — manually tracked (no utilisation in this version)
+model UserCreditCard {
+  id           String   @id @default(uuid())
+  userId       String
+  cardName     String
+  bank         String
+  last4        String?
+  creditLimit  Int?     // paise
+  statementDay Int?     // 1–31, day of month statement is generated
+  dueDay       Int?     // days after statement date when payment is due
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_credit_cards")
 }

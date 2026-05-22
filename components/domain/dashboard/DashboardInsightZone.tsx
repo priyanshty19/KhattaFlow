@@ -4,6 +4,7 @@ import { InsightCard } from '@/components/domain/insights/InsightCard'
 import { useInsights } from '@/lib/queries'
 import { RecentTransactions } from '@/components/domain/transactions/RecentTransactions'
 import { Skeleton } from '@/components/shared/Skeletons'
+import { CreditCardWidget } from '@/components/domain/credit-cards/CreditCardWidget'
 
 interface DashboardInsightZoneProps { month: string }
 
@@ -12,6 +13,9 @@ export function DashboardInsightZone({ month }: DashboardInsightZoneProps) {
 
   return (
     <div className="space-y-4">
+      {/* CredWise widget */}
+      <CreditCardWidget />
+
       {/* Insights */}
       <div className="bg-zinc-900 rounded-xl border border-zinc-600/40 p-5">
         <div className="flex items-center gap-2 mb-4">

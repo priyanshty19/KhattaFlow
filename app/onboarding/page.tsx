@@ -9,6 +9,7 @@ import {
   TrendingDown, BarChart2, TrendingUp,
 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
+import { toPaise } from '@/lib/utils/currency'
 import {
   buildDefaultCategories,
   FIXED_COMMITMENT_OPTIONS,
@@ -17,7 +18,7 @@ import {
   type CategoryTemplate,
 } from '@/constants/categories'
 
-const STEPS = ['welcome', 'profile', 'income', 'commitments', 'goal', 'investment', 'preview', 'setup', 'done'] as const
+const STEPS = ['welcome', 'profile', 'income', 'commitments', 'goal', 'investment', 'creditProfile', 'preview', 'setup', 'done'] as const
 type Step = typeof STEPS[number]
 
 const PROFILE_OPTIONS: { id: ProfileType; label: string; desc: string; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -57,6 +58,7 @@ export default function OnboardingPage() {
   const [commitments, setCommitments] = useState<string[]>([])
   const [savingsGoal, setSavingsGoal] = useState(20)
   const [investmentStyle, setInvestmentStyle] = useState<InvestmentStyle>('balanced')
+  const [creditScore, setCreditScore] = useState<number>(700)
   // Track by NAME (stable) not slug (has timestamp — changes when profile/incomeName change)
   const [deselectedNames, setDeselectedNames] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(false)
@@ -100,11 +102,12 @@ export default function OnboardingPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          salary: salary ? parseFloat(salary) : undefined,
+          salary: salary ? toPaise(salary) : undefined,
           savingsGoalPct: savingsGoal / 100,
           categories: selected,
           companyName: incomeName || null,
           investmentStyle,
+          creditScore,
         }),
       })
       setStep('done')
@@ -234,17 +237,24 @@ export default function OnboardingPage() {
               </div>
             )}
 
-            <div className="relative mb-8">
+            <div className="relative mb-2">
               <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 placeholder="0"
                 value={salary}
-                onChange={e => setSalary(e.target.value)}
+                onChange={e => setSalary(e.target.value.replace(/[^0-9]/g, ''))}
                 autoFocus
                 className="w-full pl-11 pr-4 py-4 bg-zinc-900 border border-zinc-700/50 rounded-xl text-2xl font-bold text-zinc-100 placeholder:text-zinc-700 focus:outline-none focus:border-emerald-500/50 transition-colors tabular-nums"
               />
             </div>
+            {salary && Number(salary) > 0 && (
+              <p className="text-sm text-zinc-500 mb-6 tabular-nums">
+                = ₹{Number(salary).toLocaleString('en-IN')} / month
+              </p>
+            )}
+            {(!salary || Number(salary) === 0) && <div className="mb-6" />}
             <div className="flex gap-3">
               <button onClick={() => goTo('profile')} className="px-5 py-3 border border-zinc-800 text-zinc-400 hover:text-zinc-200 rounded-xl text-sm transition-colors">Back</button>
               <button onClick={() => goTo('commitments')}
@@ -361,11 +371,89 @@ export default function OnboardingPage() {
             </div>
             <div className="flex gap-3">
               <button onClick={() => goTo('goal')} className="px-5 py-3 border border-zinc-800 text-zinc-400 hover:text-zinc-200 rounded-xl text-sm transition-colors">Back</button>
-              <button onClick={() => goTo('preview')}
+              <button onClick={() => goTo('creditProfile')}
                 className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl font-semibold transition-all active:scale-95">
-                Preview categories <ChevronRight className="w-4 h-4" />
+                Continue <ChevronRight className="w-4 h-4" />
               </button>
             </div>
+          </motion.div>
+        )}
+
+        {/* ── Credit Profile ──────────────────────────────────────── */}
+        {step === 'creditProfile' && (
+          <motion.div key="creditProfile" {...slideVariants} transition={{ duration: 0.25 }}
+            className="w-full max-w-md">
+            <h2 className="text-2xl font-bold text-zinc-100 mb-1">Your credit profile</h2>
+            <p className="text-zinc-500 mb-6 text-sm">
+              Used to personalise card recommendations. You can skip this now.
+            </p>
+
+            <div className="bg-zinc-900 border border-zinc-700/50 rounded-2xl p-6 mb-6">
+              {/* Score display */}
+              <div className="flex items-baseline justify-between mb-4">
+                <span className="text-sm text-zinc-400">CIBIL / Credit Score</span>
+                <span className={cn(
+                  'text-3xl font-bold tabular-nums',
+                  creditScore >= 800 ? 'text-emerald-400'
+                  : creditScore >= 750 ? 'text-green-400'
+                  : creditScore >= 700 ? 'text-yellow-400'
+                  : creditScore >= 650 ? 'text-orange-400'
+                  : 'text-red-400'
+                )}>{creditScore}</span>
+              </div>
+
+              {/* Gradient band */}
+              <div className="relative h-3 w-full rounded-full overflow-hidden mb-2">
+                <div className="absolute inset-0 bg-gradient-to-r from-red-500 via-orange-400 via-yellow-400 via-green-400 to-emerald-500" />
+                <div
+                  className="absolute top-0 h-full w-1.5 bg-white rounded-full shadow-lg"
+                  style={{ left: `calc(${((creditScore - 300) / 600) * 100}% - 3px)` }}
+                />
+              </div>
+              <div className="flex justify-between text-[10px] text-zinc-500 mb-5">
+                <span>Poor</span><span>Fair</span><span>Good</span><span>V.Good</span><span>Excellent</span>
+              </div>
+
+              <input
+                type="range"
+                min={300} max={900} step={1}
+                value={creditScore}
+                onChange={e => setCreditScore(Number(e.target.value))}
+                className="w-full accent-emerald-500"
+              />
+              <div className="flex justify-between text-[10px] text-zinc-600 mt-1">
+                <span>300</span><span>600</span><span>750</span><span>900</span>
+              </div>
+
+              {/* Band label */}
+              <div className={cn(
+                'mt-4 text-xs px-3 py-2 rounded-lg border',
+                creditScore >= 800 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                : creditScore >= 750 ? 'bg-green-500/10 border-green-500/20 text-green-400'
+                : creditScore >= 700 ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400'
+                : creditScore >= 650 ? 'bg-orange-500/10 border-orange-500/20 text-orange-400'
+                : 'bg-red-500/10 border-red-500/20 text-red-400'
+              )}>
+                {creditScore >= 800 ? '✦ Excellent — eligible for premium & metal cards'
+                : creditScore >= 750 ? '✓ Very Good — most rewards cards available'
+                : creditScore >= 700 ? '◎ Good — standard rewards cards available'
+                : creditScore >= 650 ? '◌ Fair — entry-level cards, building credit'
+                : '⚠ Poor — secured cards recommended'}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button onClick={() => goTo('investment')} className="px-5 py-3 border border-zinc-800 text-zinc-400 hover:text-zinc-200 rounded-xl text-sm transition-colors">Back</button>
+              <button onClick={() => goTo('preview')} className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl font-semibold transition-all active:scale-95">
+                Continue <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+            <button
+              onClick={() => goTo('preview')}
+              className="w-full mt-3 py-2 text-sm text-zinc-600 hover:text-zinc-400 transition-colors"
+            >
+              Skip for now
+            </button>
           </motion.div>
         )}
 
