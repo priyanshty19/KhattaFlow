@@ -26,7 +26,7 @@ export class BudgetEngine {
     }>,
     actuals: CategoryGroup[]
   ): BudgetStatus[] {
-    return budgets.map(budget => {
+    return budgets.filter(budget => budget.category != null).map(budget => {
       const actual = actuals.find(a => a.categoryId === budget.categoryId)
       const spent = actual?.total ?? 0
       const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0

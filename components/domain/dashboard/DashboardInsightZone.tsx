@@ -9,7 +9,7 @@ import { CreditCardWidget } from '@/components/domain/credit-cards/CreditCardWid
 interface DashboardInsightZoneProps { month: string }
 
 export function DashboardInsightZone({ month }: DashboardInsightZoneProps) {
-  const { data: insights, isLoading } = useInsights(month)
+  const { data: insights, isLoading, isError } = useInsights(month)
 
   return (
     <div className="space-y-4">
@@ -23,10 +23,14 @@ export function DashboardInsightZone({ month }: DashboardInsightZoneProps) {
           <h2 className="text-sm font-semibold text-zinc-200">AI Insights</h2>
         </div>
 
-        {isLoading ? (
+        {isLoading && !isError ? (
           <div className="space-y-3">
             {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 rounded-xl" />)}
           </div>
+        ) : isError ? (
+          <p className="text-xs text-zinc-600 py-4 text-center">
+            Couldn&apos;t load insights right now.
+          </p>
         ) : !insights?.length ? (
           <p className="text-xs text-zinc-600 py-4 text-center">
             Add more transactions to see insights.
