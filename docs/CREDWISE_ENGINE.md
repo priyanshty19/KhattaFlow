@@ -1,6 +1,6 @@
 # CredWise Recommendation Engine — Plain English Guide
 
-> **Who is this for?** Anyone who wants to understand how KhattaFlow picks credit cards for a user — without reading the code.
+> **Who is this for?** Anyone who wants to understand how FinGrid picks credit cards for a user — without reading the code.
 
 ---
 

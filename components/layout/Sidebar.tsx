@@ -33,7 +33,7 @@ export function Sidebar() {
         <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center shrink-0">
           <Wallet className="w-4 h-4 text-white" />
         </div>
-        <span className="font-bold text-base text-emerald-400 tracking-tight">KhattaFlow</span>
+        <span className="font-bold text-base text-emerald-400 tracking-tight">FinGrid</span>
       </div>
 
       {/* Nav */}

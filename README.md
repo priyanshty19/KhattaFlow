@@ -1,8 +1,8 @@
-# KhattaFlow
+# FinGrid
 
 > Personal finance dashboard built for India — track every rupee, plan your savings, and find the best credit card for your spending pattern.
 
-KhattaFlow is a full-stack Next.js application that brings together transaction tracking, budget planning, spending analytics, and an AI-powered credit card recommender (CredWise) in a single dark-themed dashboard.
+FinGrid is a full-stack Next.js application that brings together transaction tracking, budget planning, spending analytics, and an AI-powered credit card recommender (CredWise) in a single dark-themed dashboard.
 
 ---
 
@@ -48,12 +48,12 @@ Full transaction ledger with flexible import options.
 
 | Method | How it works |
 |--------|-------------|
-| **CSV Upload** | Upload a bank statement CSV; the parser maps columns to KhattaFlow fields and previews rows before import |
-| **Gmail Scan** | Connect Gmail via OAuth; KhattaFlow scans your inbox for bank transaction emails and extracts debit/credit amounts using the Gmail Parser Engine |
+| **CSV Upload** | Upload a bank statement CSV; the parser maps columns to FinGrid fields and previews rows before import |
+| **Gmail Scan** | Connect Gmail via OAuth; FinGrid scans your inbox for bank transaction emails and extracts debit/credit amounts using the Gmail Parser Engine |
 | **Paste SMS** | Copy-paste bank SMS alerts; the SMS Parser Engine extracts amounts, merchant names, and dates automatically |
 
 **Recurring rules**
-- Define a rule (category + amount + frequency) and KhattaFlow auto-creates future transactions
+- Define a rule (category + amount + frequency) and FinGrid auto-creates future transactions
 
 ---
 
@@ -144,7 +144,7 @@ Accessible from Settings → Import. Three tabs:
 
 New users go through a guided multi-step onboarding before reaching the dashboard:
 
-1. **Welcome** — brief intro to KhattaFlow
+1. **Welcome** — brief intro to FinGrid
 2. **Profile** — name and basic details
 3. **Income** — monthly take-home salary
 4. **Commitments** — fixed monthly expenses (rent, EMIs)
@@ -178,7 +178,7 @@ New users go through a guided multi-step onboarding before reaching the dashboar
 ## Project Structure
 
 ```
-paisaflow/
+fingrid/
 ├── app/
 │   ├── (dashboard)/          # All authenticated pages
 │   │   ├── page.tsx           # Overview / home
@@ -218,7 +218,7 @@ paisaflow/
 │   │   ├── gmail-parser-engine.ts
 │   │   └── sms-parser-engine.ts
 │   └── utils/
-│       ├── category-mapper.ts      # KhattaFlow → CredWise category mapping
+│       ├── category-mapper.ts      # FinGrid → CredWise category mapping
 │       ├── spend-inference.ts      # Auto-infer spend from transactions
 │       └── currency.ts             # toPaise / toRupees helpers
 ├── prisma/
@@ -245,8 +245,8 @@ paisaflow/
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/priyanshty19/KhattaFlow.git
-cd KhattaFlow
+git clone https://github.com/priyanshty19/FinGrid.git
+cd FinGrid
 npm install
 ```
 

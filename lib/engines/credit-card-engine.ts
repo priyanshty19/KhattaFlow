@@ -1,4 +1,4 @@
-// Credit card recommendation engine — KhattaFlow CredWise v3
+// Credit card recommendation engine — FinGrid CredWise v3
 // Core algorithm: ENVS (Expected Net Value Score) — ranks cards by ₹ net annual value
 //
 // v3 improvements over v2:

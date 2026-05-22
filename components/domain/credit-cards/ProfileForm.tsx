@@ -182,7 +182,7 @@ export function ProfileForm({ prefillIncome, prefillCreditScore, onResults }: Pr
             </div>
             <div className="flex items-center justify-between">
               {prefillIncome > 0 && (
-                <p className="text-[11px] text-emerald-400/70">Pre-filled from your KhattaFlow profile</p>
+                <p className="text-[11px] text-emerald-400/70">Pre-filled from your FinGrid profile</p>
               )}
               {income && Number(income) > 0 && (
                 <p className="text-[11px] text-zinc-600 ml-auto tabular-nums">

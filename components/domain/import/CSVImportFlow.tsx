@@ -29,7 +29,7 @@ function downloadTemplate() {
   const blob = new Blob([SAMPLE_CSV], { type: 'text/csv' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
-  a.href = url; a.download = 'khattaflow-template.csv'; a.click()
+  a.href = url; a.download = 'fingrid-template.csv'; a.click()
   URL.revokeObjectURL(url)
 }
 
@@ -222,7 +222,7 @@ export function CSVImportFlow() {
               <CheckCircle className="w-8 h-8 text-white" />
             </div>
             <h3 className="text-xl font-semibold text-zinc-100 mb-2">{importCount} transactions imported</h3>
-            <p className="text-sm text-zinc-500 mb-8">Your historical data is now in KhattaFlow.</p>
+            <p className="text-sm text-zinc-500 mb-8">Your historical data is now in FinGrid.</p>
             <div className="flex gap-3">
               <button onClick={reset} className="px-5 py-3 border border-zinc-800 text-zinc-400 hover:text-zinc-200 rounded-xl text-sm transition-colors">Import another</button>
               <button onClick={() => router.push('/transactions')}

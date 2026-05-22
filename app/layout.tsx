@@ -8,7 +8,7 @@ import { QueryProvider } from '@/components/providers/QueryProvider'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'KhattaFlow — Personal Finance Dashboard',
+  title: 'FinGrid — Personal Finance Dashboard',
   description: 'Clarity and control over your money through fast tracking and intelligent insights.',
   icons: { icon: '/favicon.ico' },
 }

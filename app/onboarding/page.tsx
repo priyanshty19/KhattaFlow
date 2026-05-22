@@ -170,7 +170,7 @@ export default function OnboardingPage() {
               Welcome{user?.firstName ? `, ${user.firstName}` : ''} 👋
             </h1>
             <p className="text-zinc-400 mb-8 leading-relaxed">
-              KhattaFlow gives you clarity and control over your money.
+              FinGrid gives you clarity and control over your money.
               Let&apos;s personalise your setup — takes under 2 minutes.
             </p>
             <button onClick={() => goTo('profile')}
@@ -310,7 +310,7 @@ export default function OnboardingPage() {
           <motion.div key="goal" {...slideVariants} transition={{ duration: 0.25 }}
             className="w-full max-w-md">
             <h2 className="text-2xl font-bold text-zinc-100 mb-1">Savings target</h2>
-            <p className="text-zinc-500 mb-6 text-sm">KhattaFlow will alert you when you&apos;re falling short.</p>
+            <p className="text-zinc-500 mb-6 text-sm">FinGrid will alert you when you&apos;re falling short.</p>
             <div className="bg-zinc-900 border border-zinc-700/50 rounded-2xl p-6 mb-6">
               <div className="flex items-baseline gap-2 mb-4">
                 <span className="text-5xl font-bold text-emerald-400 tabular-nums">{savingsGoal}%</span>

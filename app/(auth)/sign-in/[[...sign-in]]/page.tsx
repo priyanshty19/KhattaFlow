@@ -11,7 +11,7 @@ export default function SignInPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-zinc-100">KhattaFlow</h1>
+          <h1 className="text-2xl font-bold text-zinc-100">FinGrid</h1>
           <p className="text-zinc-500 text-sm mt-1">Your personal finance dashboard</p>
         </div>
         <SignIn

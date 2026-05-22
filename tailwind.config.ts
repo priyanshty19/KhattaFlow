@@ -50,7 +50,7 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
-        // KhattaFlow brand tokens
+        // FinGrid brand tokens
         pf: {
           green: '#10B981',
           red: '#EF4444',

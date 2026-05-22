@@ -23,12 +23,12 @@ export function TopBar({ title, month, onMonthChange, actions, className }: TopB
     )}>
       {/* Left: logo (mobile) + title + month */}
       <div className="flex items-center gap-2 md:gap-4 min-w-0">
-        {/* KhattaFlow logo — mobile only */}
+        {/* FinGrid logo — mobile only */}
         <div className="flex md:hidden items-center gap-1.5 shrink-0">
           <div className="w-6 h-6 rounded-md bg-emerald-500 flex items-center justify-center">
             <Wallet className="w-3.5 h-3.5 text-white" />
           </div>
-          <span className="font-bold text-sm text-emerald-400 tracking-tight">KhattaFlow</span>
+          <span className="font-bold text-sm text-emerald-400 tracking-tight">FinGrid</span>
         </div>
         {/* Page title — desktop only */}
         <h1 className="hidden md:block font-semibold text-base text-emerald-400 tracking-tight shrink-0">{title}</h1>

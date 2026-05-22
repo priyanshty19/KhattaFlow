@@ -32,8 +32,8 @@ npm --version
 
 ```bash
 # Unzip the project
-unzip paisaflow.zip -d paisaflow
-cd paisaflow
+unzip fingrid.zip -d fingrid
+cd fingrid
 
 # Verify structure
 ls
@@ -59,7 +59,7 @@ This installs ~200MB of packages. Takes 1–2 minutes.
 2. Click **"New Project"**
 3. Choose your organization
 4. Fill in:
-   - **Name:** `paisaflow`
+   - **Name:** `fingrid`
    - **Database Password:** Create a strong one — **save this, you'll need it**
    - **Region:** `Southeast Asia (Singapore)` — closest to Delhi NCR
 5. Click **"Create new project"** — wait ~2 minutes
@@ -112,7 +112,7 @@ Replace `[YOUR-PASSWORD]` with the password you set in Step 3a.
 In the project root, create `.env.local`:
 
 ```bash
-# In the paisaflow/ directory:
+# In the fingrid/ directory:
 cp .env.local.example .env.local
 ```
 
@@ -340,7 +340,7 @@ vercel
 
 # Follow prompts:
 # - Link to existing project? No
-# - Project name: paisaflow
+# - Project name: fingrid
 # - Root directory: ./
 # - Override settings? No
 ```

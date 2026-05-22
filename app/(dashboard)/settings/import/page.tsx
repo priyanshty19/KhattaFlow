@@ -18,7 +18,7 @@ export default function ImportPage() {
       toast.error('Gmail connection failed. Please try again.')
     }
     if (searchParams.get('error') === 'gmail_user_not_found') {
-      toast.error('Gmail account does not match your KhattaFlow account.')
+      toast.error('Gmail account does not match your FinGrid account.')
     }
   }, [searchParams])
 
