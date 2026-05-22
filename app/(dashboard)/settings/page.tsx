@@ -2,16 +2,18 @@
 import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { toast } from 'sonner'
-import { User, Target, Tag, IndianRupee, Building2 } from 'lucide-react'
+import { User, Target, Tag, IndianRupee, Building2, Phone, Link2 } from 'lucide-react'
 import { toPaise, toRupees } from '@/lib/utils/currency'
 import { TopBar } from '@/components/layout/TopBar'
 import { CategoryManager } from '@/components/domain/settings/CategoryManager'
+import { GmailConnect } from '@/components/domain/settings/GmailConnect'
 
 export default function SettingsPage() {
   const { user } = useUser()
   const [salary, setSalary] = useState('')
   const [goalPct, setGoalPct] = useState(20)
   const [companyName, setCompanyName] = useState('')
+  const [phone, setPhone] = useState('')
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -21,6 +23,7 @@ export default function SettingsPage() {
         if (data?.monthlySalary) setSalary(String(toRupees(data.monthlySalary)))
         if (data?.savingsGoalPct) setGoalPct(Math.round(data.savingsGoalPct * 100))
         if (data?.companyName) setCompanyName(data.companyName)
+        if (data?.phone) setPhone(data.phone)
       })
       .catch(() => {})
   }, [])
@@ -35,6 +38,7 @@ export default function SettingsPage() {
           monthlySalary: salary ? toPaise(salary) : undefined,
           savingsGoalPct: goalPct / 100,
           companyName: companyName || null,
+          phone: phone || null,
         }),
       })
       toast.success('Settings saved')
@@ -77,6 +81,19 @@ export default function SettingsPage() {
               </p>
             </div>
             <div>
+              <label className="text-xs text-zinc-500 mb-1.5 block">Phone (for SMS lookup)</label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+                <input
+                  type="tel"
+                  placeholder="+91 98765 43210"
+                  value={phone}
+                  onChange={e => setPhone(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2.5 bg-zinc-800 border border-zinc-600/40 rounded-lg text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50 transition-colors"
+                />
+              </div>
+            </div>
+            <div>
               <label className="text-xs text-zinc-500 mb-1.5 block">Company / Employer</label>
               <div className="relative">
                 <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
@@ -94,13 +111,20 @@ export default function SettingsPage() {
               <div className="relative">
                 <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
                 <input
-                  type="number"
-                  placeholder="108500"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="e.g. 100000 for ₹1 lakh/month"
                   value={salary}
-                  onChange={e => setSalary(e.target.value)}
+                  onChange={e => setSalary(e.target.value.replace(/[^0-9]/g, ''))}
                   className="w-full pl-9 pr-4 py-2.5 bg-zinc-800 border border-zinc-600/40 rounded-lg text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50 transition-colors tabular-nums"
                 />
               </div>
+              {salaryNum > 0 && (
+                <p className="text-xs text-emerald-400/80 mt-1.5 tabular-nums">
+                  = ₹{salaryNum.toLocaleString('en-IN')}/month
+                  {salaryNum >= 100000 && <span className="text-zinc-500 ml-1">({(salaryNum / 100000).toFixed(salaryNum % 100000 === 0 ? 0 : 1)}L)</span>}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -135,6 +159,18 @@ export default function SettingsPage() {
         >
           {saving ? 'Saving…' : 'Save Settings'}
         </button>
+
+        {/* Connected Accounts */}
+        <div className="bg-zinc-900 border border-zinc-600/40 rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-5">
+            <Link2 className="w-4 h-4 text-zinc-400" />
+            <div>
+              <h3 className="text-sm font-semibold text-zinc-200">Connected Accounts</h3>
+              <p className="text-xs text-zinc-500 mt-0.5">Connect Gmail to auto-import bank transaction emails.</p>
+            </div>
+          </div>
+          <GmailConnect />
+        </div>
 
         {/* Categories */}
         <div className="bg-zinc-900 border border-zinc-600/40 rounded-xl p-5">

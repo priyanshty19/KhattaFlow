@@ -21,7 +21,8 @@ export function CreditCardWidget() {
       </p>
 
       <Link
-        href="/credit-cards"
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        href={'/credit-cards' as any}
         className="flex items-center justify-between w-full px-3 py-2 rounded-lg bg-emerald-500/8 border border-emerald-500/20 text-emerald-400 text-xs font-medium hover:bg-emerald-500/15 transition-colors group"
       >
         <span className="flex items-center gap-1.5">
