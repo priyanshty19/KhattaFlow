@@ -6,6 +6,24 @@ FinGrid is a full-stack Next.js application that brings together transaction tra
 
 ---
 
+## Recent Updates
+
+### May 2026
+
+**Gemini AI Insights**
+- The Dashboard insight zone now calls **Gemini 2.0 Flash** to generate 4–5 personalised financial insights per month
+- Context fed to Gemini: income, expenses, savings rate vs goal, budget overages, near-limit categories, and credit card spend %
+- Graceful fallback chain: Gemini → rule-based InsightEngine → empty array (never a 500)
+- Requires `GEMINI_API_KEY` env var (Google AI Studio) — see [Local Setup](#local-setup)
+
+**Redesigned Auth Pages — fully responsive**
+- Sign-in and sign-up pages replaced with a split-screen layout
+- **Desktop**: Left panel — FinGrid logo, tagline, 3 mock ₹ stat cards (income, savings, Gemini AI insight chip), CredWise chip; Right panel — Clerk widget
+- **Mobile**: Compact brand banner (logo + tagline + condensed stat chips) stacked above the Clerk form — no content hidden on any screen size
+- Shared `app/(auth)/layout.tsx` shell used by both routes; Clerk appearance tokens keep the form on-brand (emerald + zinc palette)
+
+---
+
 ## Table of Contents
 
 - [Features](#features)
@@ -26,7 +44,7 @@ The home screen gives you a one-glance pulse of your finances for the selected m
 
 - **4 stat cards** — Income, Expenses, Savings, and Investments, each with month-on-month delta
 - **Budget zone** — category-by-category spend vs budget bars with % utilisation
-- **Insight zone** — top spending category, savings rate call-out, and the CredWise card recommendation widget
+- **Insight zone** — **Gemini AI-generated insights** (4–5 personalised cards per month: savings wins, over-budget warnings, credit card spend flags, tips); falls back to rule-based engine if Gemini is unavailable. Also includes the CredWise card recommendation widget
 - **Month picker** — every section is scoped to a single month; switch months from the top bar
 - **Quick Add** — floating button (bottom-right on mobile, top-bar on desktop) to log a transaction without leaving the page
 
@@ -271,6 +289,9 @@ DIRECT_URL=postgresql://postgres:[password]@[host]:5432/postgres
 GMAIL_CLIENT_ID=...
 GMAIL_CLIENT_SECRET=...
 GMAIL_REDIRECT_URI=http://localhost:3000/api/connect/gmail/callback
+
+# Gemini AI (for AI-powered insights on dashboard)
+GEMINI_API_KEY=AIza...
 
 # Optional — Admin secret for card seed endpoint
 ADMIN_SECRET=your-secret-here
