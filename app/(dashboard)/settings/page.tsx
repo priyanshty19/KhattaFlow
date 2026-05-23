@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
+import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { User, Target, Tag, IndianRupee, Building2, Phone, Link2 } from 'lucide-react'
 import { toPaise, toRupees } from '@/lib/utils/currency'
@@ -10,11 +11,27 @@ import { GmailConnect } from '@/components/domain/settings/GmailConnect'
 
 export default function SettingsPage() {
   const { user } = useUser()
+  const searchParams = useSearchParams()
   const [salary, setSalary] = useState('')
   const [goalPct, setGoalPct] = useState(20)
   const [companyName, setCompanyName] = useState('')
   const [phone, setPhone] = useState('')
   const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    const err = searchParams.get('error')
+    if (err === 'gmail_not_configured') {
+      toast.error('Google OAuth credentials are not set up. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your .env.local file.')
+    } else if (err === 'gmail_auth_failed') {
+      toast.error('Gmail connection failed. Please try again.')
+    } else if (err === 'gmail_user_not_found') {
+      toast.error('Gmail account does not match your FinGrid account.')
+    }
+    if (searchParams.get('connected') === 'gmail') {
+      toast.success('Gmail connected successfully')
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     fetch('/api/user')

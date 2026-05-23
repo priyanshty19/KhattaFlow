@@ -1,14 +1,20 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
-import { Mail, CheckCircle2, Loader2 } from 'lucide-react'
+import { Mail, CheckCircle2, Loader2, AlertTriangle } from 'lucide-react'
 
 export function GmailConnect() {
-  const [status, setStatus] = useState<'loading' | 'connected' | 'disconnected'>('loading')
+  const [status, setStatus] = useState<'loading' | 'connected' | 'disconnected' | 'not_configured'>('loading')
   const [email, setEmail] = useState<string | null>(null)
   const [disconnecting, setDisconnecting] = useState(false)
 
   useEffect(() => {
+    // Check if we landed here from a failed connect attempt
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('error') === 'gmail_not_configured') {
+      setStatus('not_configured')
+      return
+    }
     fetch('/api/connect/gmail/status')
       .then(r => r.json())
       .then(data => {
@@ -36,6 +42,33 @@ export function GmailConnect() {
     <div className="flex items-center gap-2 text-zinc-500">
       <Loader2 className="w-4 h-4 animate-spin" />
       <span className="text-sm">Checking…</span>
+    </div>
+  )
+
+  if (status === 'not_configured') return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-start gap-2 p-3 bg-amber-900/20 border border-amber-500/30 rounded-lg">
+        <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+        <div className="text-xs text-amber-300 space-y-1">
+          <p className="font-medium">Google OAuth credentials not configured</p>
+          <p className="text-amber-400/70">
+            Add <code className="bg-zinc-800 px-1 rounded">GOOGLE_CLIENT_ID</code> and{' '}
+            <code className="bg-zinc-800 px-1 rounded">GOOGLE_CLIENT_SECRET</code> to your{' '}
+            <code className="bg-zinc-800 px-1 rounded">.env.local</code> file, then restart the dev server.
+          </p>
+          <p className="text-amber-400/60">
+            Get credentials from{' '}
+            <a
+              href="https://console.cloud.google.com/apis/credentials"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-amber-300 transition-colors"
+            >
+              Google Cloud Console → APIs & Services → Credentials
+            </a>
+          </p>
+        </div>
+      </div>
     </div>
   )
 
