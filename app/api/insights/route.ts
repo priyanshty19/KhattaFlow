@@ -101,7 +101,7 @@ export async function GET(req: Request) {
     prisma.monthlySummary.findUnique({ where: { userId_month: { userId, month } } }),
     prisma.monthlySummary.findUnique({ where: { userId_month: { userId, month: prevMonth } } }),
     prisma.budget.findMany({ where: { userId, month }, include: { category: true } }),
-    prisma.transaction.findMany({ where: { userId, month, deletedAt: null } }),
+    prisma.transaction.findMany({ where: { userId, month, deletedAt: null }, include: { category: true } }),
     prisma.user.findUnique({ where: { id: userId }, select: { savingsGoalPct: true } }),
   ])
 

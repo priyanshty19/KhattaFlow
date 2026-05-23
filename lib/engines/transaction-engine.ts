@@ -48,6 +48,7 @@ export class TransactionEngine {
     const map = new Map<string, CategoryGroup>()
 
     for (const t of transactions) {
+      if (!t.category) continue // skip orphaned transactions without a category
       const existing = map.get(t.categoryId)
       if (existing) {
         existing.total += t.amount
