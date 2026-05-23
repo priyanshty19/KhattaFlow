@@ -111,26 +111,33 @@ export async function GET(req: Request) {
   const budgetStatuses = BudgetEngine.computeBudgetStatus(budgets as any, categoryGroups)
   const savingsGoalPct = user?.savingsGoalPct ?? 0.20
 
-  // Try Gemini first, fall back to rule-based engine
+  const prev = previousSummary ?? { totalIncome: 0, totalExpenses: 0, totalSavings: 0, totalInvestments: 0 }
+
+  // Try Gemini first, fall back to rule-based engine, final safety net returns []
   try {
     const insights = await generateWithGemini(
       currentSummary as any,
-      previousSummary ?? { totalIncome: 0, totalExpenses: 0, totalSavings: 0, totalInvestments: 0 },
+      prev,
       budgetStatuses,
       transactions as any,
       savingsGoalPct,
       month
     )
     return NextResponse.json(insights)
-  } catch (err) {
-    console.warn('[insights] Gemini failed, falling back to rule engine:', err)
-    const insights = InsightEngine.generate(
-      currentSummary as any,
-      previousSummary as any ?? { totalIncome: 0, totalExpenses: 0, totalSavings: 0, totalInvestments: 0 },
-      budgetStatuses,
-      transactions as any,
-      savingsGoalPct
-    )
-    return NextResponse.json(insights)
+  } catch (geminiErr) {
+    console.warn('[insights] Gemini failed:', (geminiErr as Error).message)
+    try {
+      const insights = InsightEngine.generate(
+        currentSummary as any,
+        prev as any,
+        budgetStatuses,
+        transactions as any,
+        savingsGoalPct
+      )
+      return NextResponse.json(insights)
+    } catch (engineErr) {
+      console.error('[insights] Rule engine also failed:', engineErr)
+      return NextResponse.json([])
+    }
   }
 }
