@@ -8,6 +8,34 @@ FinGrid is a full-stack Next.js application that brings together transaction tra
 
 ## Recent Updates
 
+### May 2026 (latest)
+
+**Production launch — `myfingrid.com`**
+- App is live at [myfingrid.com](https://myfingrid.com) on Vercel
+- Clerk switched from dev keys (`pk_test_*`) to production keys (`pk_live_*`)
+- GoDaddy DNS configured with 5 Clerk CNAME records (`clerk`, `accounts`, `clkmail`, `clk._domainkey`, `clk2._domainkey`)
+- Clerk webhook endpoint live at `/api/webhooks/clerk` — `user.created` event seeds new users into the DB
+- Google OAuth configured with custom credentials in Clerk Production dashboard
+- Cloudflare CAPTCHA now correctly visible on the desktop auth page (right panel overflow fixed)
+
+**Financial Email Fetch — AI-powered email-to-transaction pipeline**
+- New `/api/financial-fetch` endpoint orchestrates Gmail → AI parse → transaction upsert
+- `/api/financial-fetch/execute` runs the extraction job; `/api/financial-fetch/prompt-status` polls LLM progress
+- `lib/engines/financial-email-parser.ts` — regex + LLM hybrid parser for Indian bank transaction emails (15+ banks)
+- `lib/engines/merchant-category-rules.ts` — rule-based merchant-to-category mapper (auto-categorises Amazon, Swiggy, Zomato, Uber, etc.)
+- `lib/utils/email-auto-assign.ts` — assigns parsed transactions to existing FinGrid categories by merchant rules + keyword matching
+- `components/domain/dashboard/GmailOnboardModal.tsx` — first-time Gmail connection modal surfaced on dashboard for users who haven't linked Gmail yet
+- `components/domain/import/FinancialFetchFlow.tsx` — new import tab for AI-powered email fetch with progress UI
+- `scripts/debug-email-parser.ts` — local debugging script to test parser against raw email payloads
+
+**CI/CD automation**
+- `.github/workflows/auto-pr.yml` — automatically opens a PR on GitHub whenever a branch is pushed (skips `master`/`main`)
+- `.github/workflows/branch-tracker.yml` — logs every branch event (create, push, PR open, merge, delete) to `BRANCHES.md` on the `meta` orphan branch
+- `meta` orphan branch stores the branch activity log; Vercel ignores it (no spurious error deployments)
+- GitHub Actions granted `can_approve_pull_request_reviews` permission to enable auto-PR creation
+
+---
+
 ### May 2026
 
 **Gemini AI Insights**
@@ -213,6 +241,8 @@ fingrid/
 │   │   ├── user/              # Profile read/write
 │   │   ├── onboarding/        # Onboarding save
 │   │   ├── connect/           # Gmail OAuth
+│   │   ├── financial-fetch/   # AI email fetch — orchestrate / execute / prompt-status
+│   │   ├── webhooks/clerk/    # Clerk user.created webhook → seed DB user
 │   │   └── import/            # CSV / Gmail / SMS parsers
 │   ├── onboarding/            # Onboarding wizard (outside dashboard layout)
 │   ├── landing/               # Public marketing page
@@ -220,33 +250,41 @@ fingrid/
 ├── components/
 │   ├── domain/
 │   │   ├── credit-cards/      # CredWise UI components
-│   │   ├── dashboard/         # Pulse, budget zone, insight zone
+│   │   ├── dashboard/         # Pulse, budget zone, insight zone, GmailOnboardModal
 │   │   ├── transactions/      # List, filter, quick-add modal
 │   │   ├── analytics/         # Chart components
 │   │   ├── budgets/           # Budget bars, planner, tabs
-│   │   ├── import/            # CSV / Gmail / SMS import flows
+│   │   ├── import/            # CSV / Gmail / SMS / FinancialFetch import flows
 │   │   └── settings/          # Category manager, Gmail connect
 │   ├── layout/                # Sidebar, BottomNav, TopBar
 │   └── shared/                # Skeletons, common UI atoms
 ├── lib/
 │   ├── engines/
-│   │   ├── credit-card-engine.ts   # ENVS recommendation algorithm
+│   │   ├── credit-card-engine.ts      # ENVS recommendation algorithm
 │   │   ├── budget-engine.ts
 │   │   ├── analytics-engine.ts
+│   │   ├── financial-email-parser.ts  # AI + regex parser for Indian bank emails
+│   │   ├── merchant-category-rules.ts # Merchant → FinGrid category rule engine
 │   │   ├── gmail-parser-engine.ts
 │   │   └── sms-parser-engine.ts
 │   └── utils/
-│       ├── category-mapper.ts      # FinGrid → CredWise category mapping
-│       ├── spend-inference.ts      # Auto-infer spend from transactions
-│       └── currency.ts             # toPaise / toRupees helpers
+│       ├── category-mapper.ts         # FinGrid → CredWise category mapping
+│       ├── spend-inference.ts         # Auto-infer spend from transactions
+│       ├── email-auto-assign.ts       # Assign parsed emails to categories
+│       └── currency.ts                # toPaise / toRupees helpers
 ├── prisma/
 │   ├── schema.prisma
 │   ├── seed.ts                # Base categories seed
 │   ├── seed-cards.ts          # Credit card catalog seed (from Excel)
 │   └── data/
 │       └── credit-cards.xlsx  # 120+ card catalog
+├── .github/
+│   └── workflows/
+│       ├── auto-pr.yml            # Auto-create PR on branch push
+│       └── branch-tracker.yml    # Log branch events to meta/BRANCHES.md
 ├── scripts/
-│   └── test-recommendations.ts  # Engine test suite (10 user profiles)
+│   ├── test-recommendations.ts  # Engine test suite (10 user profiles)
+│   └── debug-email-parser.ts    # Local email parser debugger
 └── docs/
     └── CREDWISE_ENGINE.md     # Plain-English algorithm documentation
 ```
@@ -273,9 +311,10 @@ npm install
 Create `.env.local`:
 
 ```env
-# Clerk
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
-CLERK_SECRET_KEY=sk_...
+# Clerk (dev keys: pk_test_* / sk_test_* — production: pk_live_* / sk_live_*)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+CLERK_WEBHOOK_SECRET=whsec_...    # Clerk Dashboard → Webhooks → Signing Secret
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/
@@ -409,9 +448,41 @@ git push origin master   # Vercel auto-builds on every push to master
 
 The `build` script (`prisma generate && next build`) regenerates the Prisma client automatically during every Vercel build — no manual step needed in CI.
 
+**Production URL**: [myfingrid.com](https://myfingrid.com)
+
+### Branch workflow
+
+All changes go through PRs — master is branch-protected.
+
+```bash
+git checkout -b feature/my-feature   # branch from master
+# make changes, push
+git push -u origin feature/my-feature
+# → auto-PR is created automatically by GitHub Actions
+# → merge PR on GitHub
+# → Vercel deploys master to production automatically
+```
+
 ### Environment variables on Vercel
 
 Add the same variables from `.env.local` to your Vercel project settings. Vercel injects them at build time and runtime.
+
+**Required production additions:**
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` — `pk_live_*` from Clerk Production dashboard
+- `CLERK_SECRET_KEY` — `sk_live_*` from Clerk Production dashboard
+- `CLERK_WEBHOOK_SECRET` — `whsec_*` from Clerk Dashboard → Webhooks → Signing Secret
+
+**Clerk DNS (add to your domain registrar):**
+
+| Type | Name | Target |
+|------|------|--------|
+| CNAME | `clerk` | `frontend-api.clerk.services` |
+| CNAME | `accounts` | `accounts.clerk.services` |
+| CNAME | `clkmail` | `mail.<instance>.clerk.services` |
+| CNAME | `clk._domainkey` | `dkim1.<instance>.clerk.services` |
+| CNAME | `clk2._domainkey` | `dkim2.<instance>.clerk.services` |
+
+Exact values are shown in Clerk Dashboard → Configure → Domains → Connect.
 
 ---
 
@@ -429,5 +500,6 @@ Add the same variables from `.env.local` to your Vercel project settings. Vercel
 | `npm run db:seed-cards` | Seed credit card catalog from `prisma/data/credit-cards.xlsx` |
 | `npm run db:studio` | Open Prisma Studio — visual database browser |
 | `npm run test:recs` | Run CredWise engine test suite (10 user profiles, prints ranked results) |
+| `npx ts-node scripts/debug-email-parser.ts` | Debug financial email parser against raw email payloads locally |
 | `npm run test` | Run Vitest unit tests |
 | `npm run test:watch` | Run Vitest in watch mode |
