@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <ClerkProvider
       signInFallbackRedirectUrl="/"
       signUpFallbackRedirectUrl="/onboarding"
-      signOutFallbackRedirectUrl="/sign-in"
+      afterSignOutUrl="/sign-in"
     >
       <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
         <body className="bg-background text-foreground antialiased">
