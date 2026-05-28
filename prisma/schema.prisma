@@ -206,21 +206,34 @@ model OtpVerification {
 }
 
 model OAuthConnection {
-  id             String   @id @default(uuid())
-  userId         String
-  provider       String
-  providerEmail  String
-  accessToken    String
-  refreshToken   String
-  tokenExpiresAt DateTime?
-  scopes         String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id              String   @id @default(uuid())
+  userId          String
+  provider        String
+  providerEmail   String
+  accessToken     String
+  refreshToken    String
+  tokenExpiresAt  DateTime?
+  scopes          String
+  gmailHistoryId  String?   // Gmail History API cursor — null means no prior sync
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, provider, providerEmail])
   @@map("oauth_connections")
+}
+
+// Tracks every Gmail message we've already imported — prevents duplicate transactions
+model EmailImportLog {
+  id             String   @id @default(uuid())
+  userId         String
+  gmailMessageId String
+  importedAt     DateTime @default(now())
+
+  @@unique([userId, gmailMessageId])
+  @@index([userId])
+  @@map("email_import_logs")
 }
 
 // ─── CredWise / Credit Card Recommender ──────────────────────────────────────

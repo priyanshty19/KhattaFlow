@@ -18,7 +18,7 @@ const NAV_ITEMS: { href: string; label: string; icon: React.ComponentType<{ clas
 ]
 
 const BOTTOM_ITEMS: { href: string; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { href: '/settings/import', label: 'Import CSV', icon: Upload },
+  { href: '/settings/import', label: 'Sync Transactions', icon: Upload },
   { href: '/settings',        label: 'Settings',   icon: Settings },
 ]
 

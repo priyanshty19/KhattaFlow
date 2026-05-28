@@ -135,7 +135,7 @@ export function SMSImportFlow() {
                   </span>
                 </td>
                 <td className="py-2 pr-3 text-zinc-400 tabular-nums">{row.accountLast4 ? `···${row.accountLast4}` : '—'}</td>
-                <td className="py-2 pr-3 text-zinc-400">{row.date ? row.date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—'}</td>
+                <td className="py-2 pr-3 text-zinc-400">{row.date ? new Date(row.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '—'}</td>
                 <td className="py-2">
                   <select
                     value={assignments[i] ?? ''}

@@ -1,0 +1,58 @@
+name: Auto Create PR on Branch Push
+
+on:
+  push:
+    branches-ignore:
+      - master
+      - main
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create PR if not exists
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const branch = context.ref.replace('refs/heads/', '');
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            // Check if a PR already exists for this branch
+            const existing = await github.rest.pulls.list({
+              owner,
+              repo,
+              head: `${owner}:${branch}`,
+              state: 'open',
+            });
+
+            if (existing.data.length > 0) {
+              console.log(`PR already exists: #${existing.data[0].number}`);
+              return;
+            }
+
+            // Build a readable title from branch name
+            const title = branch
+              .replace(/^(feature|fix|chore|hotfix|refactor)\//, '')
+              .replace(/-/g, ' ')
+              .replace(/\b\w/g, c => c.toUpperCase());
+
+            const pr = await github.rest.pulls.create({
+              owner,
+              repo,
+              title: `[${branch.split('/')[0]?.toUpperCase() ?? 'FEAT'}] ${title}`,
+              head: branch,
+              base: 'master',
+              body: `## Summary\n_Auto-generated PR for branch \`${branch}\`._\n\n## Changes\n- \n\n## Test plan\n- [ ] Manual testing\n- [ ] No regressions\n\n---\n🤖 Auto-created by [auto-pr workflow](.github/workflows/auto-pr.yml)`,
+              draft: false,
+            });
+
+            console.log(`Created PR #${pr.data.number}: ${pr.data.html_url}`);
