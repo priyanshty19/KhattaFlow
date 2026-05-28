@@ -81,7 +81,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
         {/* ── Mobile Clerk form ── */}
         <div className="flex flex-col items-center px-5 py-8">
-          <div className="w-full max-w-sm">
+          <div className="w-full max-w-md">
             {children}
           </div>
         </div>
@@ -182,10 +182,11 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         </div>
 
         {/* ── Right panel — Clerk widget ── */}
-        {/* py-10 (not py-16) keeps the Cloudflare CAPTCHA checkbox in the
-            visible viewport so Clerk can unblock the Google OAuth button */}
-        <div className="flex flex-col items-center justify-center overflow-y-auto px-8 py-10 min-h-0">
-          <div className="w-full max-w-sm">
+        {/* No overflow-y-auto here — Clerk's Cloudflare CAPTCHA uses position:fixed
+            internally, which gets clipped by overflow:auto ancestors in Chrome.
+            Let the page itself scroll if needed; the panel just centres its content. */}
+        <div className="flex flex-col items-center justify-center px-8 py-12">
+          <div className="w-full max-w-md">
             {children}
           </div>
         </div>
