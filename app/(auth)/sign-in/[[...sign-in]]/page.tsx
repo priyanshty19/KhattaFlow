@@ -17,7 +17,7 @@ export default function SignInPage() {
         },
         elements: {
           rootBox: 'w-full',
-          card: 'bg-zinc-900 border border-zinc-800 shadow-2xl shadow-black/40 !rounded-2xl',
+          card: 'bg-zinc-900 border border-zinc-800 shadow-2xl shadow-black/40 !rounded-2xl !min-h-[700px]',
           headerTitle: 'text-zinc-100 font-semibold',
           headerSubtitle: 'text-zinc-400',
           socialButtonsBlockButton:
