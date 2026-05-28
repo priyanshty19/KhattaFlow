@@ -4,6 +4,7 @@ Full history of every branch created, updated, and merged in this repo.
 
 | Date | Branch | Event | Actor | PR | Notes |
 |------|--------|-------|-------|----|-------|
+| 2026-05-28 | `fix/clerk-csp-warnings` | 🚀 Merged | @priyanshty19 | [#9](https://github.com/priyanshty19/fingrid/pull/9) | [FIX] Clerk Csp Warnings |
 | 2026-05-28 | `fix/clerk-csp-warnings` | ✅ Created | @priyanshty19 | — | — |
 | 2026-05-28 | `fix/onboarding-data-loss` | 🚀 Merged | @priyanshty19 | [#8](https://github.com/priyanshty19/fingrid/pull/8) | [FIX] Onboarding Data Loss |
 | 2026-05-28 | `fix/onboarding-data-loss` | 📤 Pushed | @priyanshty19 | — | — |
