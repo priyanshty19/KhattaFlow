@@ -14,9 +14,8 @@ export async function GET(_req: Request) {
   if (existing === 0) {
     const clerkUser = await currentUser()
     const email = clerkUser?.emailAddresses[0]?.emailAddress ?? ''
-    if (email) {
-      await prisma.user.deleteMany({ where: { email, id: { not: userId } } })
-    }
+    // Do NOT delete old user records here — they may have real transaction data.
+    // Migration is handled safely in the onboarding route.
     await prisma.user.upsert({
       where: { id: userId },
       create: { id: userId, email, name: clerkUser?.fullName ?? null, savingsGoalPct: 0.20 },
