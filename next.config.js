@@ -19,11 +19,14 @@ const nextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://*.clerk.com https://clerk.myfingrid.com",
               "style-src 'self' 'unsafe-inline' https://*.clerk.com",
-              "img-src 'self' data: blob: https://*.clerk.com https://*.gravatar.com https://img.clerk.com",
+              "img-src 'self' data: blob: https://*.clerk.com https://*.gravatar.com https://img.clerk.com https://challenges.cloudflare.com",
               "font-src 'self' data:",
               "frame-src 'self' https://challenges.cloudflare.com https://*.clerk.com https://clerk.myfingrid.com https://accounts.google.com",
-              "connect-src 'self' https://*.clerk.com https://clerk.myfingrid.com https://challenges.cloudflare.com wss://*.clerk.com",
-              "worker-src 'self' blob:",
+              "connect-src 'self' https://*.clerk.com https://clerk.myfingrid.com https://challenges.cloudflare.com wss://*.clerk.com https://*.cloudflare.com",
+              // Turnstile uses a Web Worker for invisible/smart challenge processing.
+              // Without challenges.cloudflare.com in worker-src the worker is killed silently
+              // and the CAPTCHA token is never generated — causing the desktop form to hang.
+              "worker-src 'self' blob: https://challenges.cloudflare.com",
             ].join('; '),
           },
         ],
