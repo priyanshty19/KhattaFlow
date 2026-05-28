@@ -20,18 +20,22 @@ export default function SettingsPage() {
 
   useEffect(() => {
     const err = searchParams.get('error')
+    const connected = searchParams.get('connected')
     if (err === 'gmail_not_configured') {
-      toast.error('Google OAuth credentials are not set up. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your .env.local file.')
+      toast.error('Google OAuth credentials are not set up. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your .env.local.')
     } else if (err === 'gmail_auth_failed') {
-      toast.error('Gmail connection failed. Please try again.')
+      const detail = searchParams.get('detail')
+      toast.error(
+        detail ? `Gmail auth failed: ${detail}` : 'Gmail connection failed — check the terminal for details.',
+        { duration: 10000 }
+      )
     } else if (err === 'gmail_user_not_found') {
-      toast.error('Gmail account does not match your FinGrid account.')
+      toast.error('Gmail account not found in FinGrid. Try signing in again.')
     }
-    if (searchParams.get('connected') === 'gmail') {
+    if (connected === 'gmail') {
       toast.success('Gmail connected successfully')
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [searchParams])
 
   useEffect(() => {
     fetch('/api/user')

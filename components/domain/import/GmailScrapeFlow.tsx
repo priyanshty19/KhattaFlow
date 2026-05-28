@@ -135,7 +135,7 @@ export function GmailScrapeFlow() {
                     {row.type}
                   </span>
                 </td>
-                <td className="py-2 pr-3 text-zinc-400">{row.date ? row.date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' }) : '—'}</td>
+                <td className="py-2 pr-3 text-zinc-400">{row.date ? new Date(row.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' }) : '—'}</td>
                 <td className="py-2">
                   <select
                     value={assignments[i] ?? ''}

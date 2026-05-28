@@ -48,10 +48,43 @@ function detectBank(text: string): string {
   return 'Unknown Bank'
 }
 
+const MONTH_MAP: Record<string, number> = {
+  jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+  jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+  january: 0, february: 1, march: 2, april: 3, june: 5,
+  july: 6, august: 7, september: 8, october: 9, november: 10, december: 11,
+}
+
+function twoDigitYear(y: number): number {
+  // 00–49 → 2000–2049, 50–99 → 1950–1999
+  return y < 100 ? (y < 50 ? 2000 + y : 1900 + y) : y
+}
+
 function parseDate(raw: string): Date | null {
-  const cleaned = raw.replace(/[-\/]/g, ' ')
-  const d = new Date(cleaned)
-  return isNaN(d.getTime()) ? null : d
+  // 1. DD-Mon-YYYY or DD-Mon-YY  e.g. "04-Aug-2025", "4 Aug 25"
+  const dMonY = raw.match(/^(\d{1,2})[-\/\s]([A-Za-z]{3,9})[-\/\s](\d{2,4})$/)
+  if (dMonY) {
+    const day = parseInt(dMonY[1])
+    const mon = MONTH_MAP[dMonY[2].toLowerCase().slice(0, 3)]
+    const year = twoDigitYear(parseInt(dMonY[3]))
+    if (mon !== undefined) return new Date(year, mon, day)
+  }
+
+  // 2. DD/MM/YYYY or DD-MM-YYYY (Indian format — day first)
+  const dmy = raw.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{2,4})$/)
+  if (dmy) {
+    const day = parseInt(dmy[1])
+    const month = parseInt(dmy[2]) - 1
+    const year = twoDigitYear(parseInt(dmy[3]))
+    if (day >= 1 && day <= 31 && month >= 0 && month <= 11)
+      return new Date(year, month, day)
+  }
+
+  // 3. YYYY-MM-DD (ISO)
+  const iso = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (iso) return new Date(parseInt(iso[1]), parseInt(iso[2]) - 1, parseInt(iso[3]))
+
+  return null
 }
 
 export class SmsParserEngine {

@@ -38,15 +38,40 @@ export async function POST(req: Request) {
 
   if (!items.length) return NextResponse.json({ error: 'items array is required' }, { status: 400 })
 
+  // ── Deduplication pre-flight ──────────────────────────────────────────────────
+  // Skip items whose gmailMessageId was already imported (prevents double-import on re-scan)
+  const incomingIds = items.map(i => i.parsed.gmailMessageId).filter(Boolean)
+  const alreadyLogged = await prisma.emailImportLog.findMany({
+    where: { userId, gmailMessageId: { in: incomingIds } },
+    select: { gmailMessageId: true },
+  })
+  const alreadySet = new Set(alreadyLogged.map(r => r.gmailMessageId))
+  const newItems = items.filter(i => !alreadySet.has(i.parsed.gmailMessageId))
+  const dedupSkipped = items.length - newItems.length
+
+  if (!newItems.length) {
+    return NextResponse.json({
+      importId: null,
+      count: 0,
+      dedupSkipped,
+      status: 'success',
+      message: `All ${dedupSkipped} item(s) already imported.`,
+    })
+  }
+
   const now = new Date()
   const filename = `financial_fetch_${now.toISOString().slice(0, 7)}`
 
   const importRecord = await prisma.import.create({
-    data: { userId, filename, rowCount: items.length, status: 'pending', errorLog: [] },
+    data: { userId, filename, rowCount: newItems.length, status: 'pending', errorLog: [] },
   })
 
-  const rows = items.map(({ parsed, categoryId }) => {
-    const date = parsed.date ?? now
+  const rows = newItems.map(({ parsed, categoryId }) => {
+    // parsed.date comes from JSON — may arrive as an ISO string instead of a Date object.
+    // new Date(Date|string) handles both safely.
+    const date: Date = parsed.date
+      ? new Date(parsed.date as unknown as string)
+      : now
     return {
       userId,
       categoryId,
@@ -77,10 +102,23 @@ export async function POST(req: Request) {
 
   await prisma.transaction.createMany({ data: rows })
 
+  // Log imported message IDs for future dedup checks
+  const importLogRows = newItems
+    .filter(i => i.parsed.gmailMessageId)
+    .map(i => ({ userId, gmailMessageId: i.parsed.gmailMessageId }))
+  if (importLogRows.length) {
+    await prisma.emailImportLog.createMany({ data: importLogRows, skipDuplicates: true })
+  }
+
   const affectedMonths = Array.from(new Set(rows.map(r => r.month)))
   await Promise.all(affectedMonths.map(month => updateMonthlySummary(userId, month)))
 
   await prisma.import.update({ where: { id: importRecord.id }, data: { status: 'success' } })
 
-  return NextResponse.json({ importId: importRecord.id, count: rows.length, status: 'success' })
+  return NextResponse.json({
+    importId: importRecord.id,
+    count: rows.length,
+    dedupSkipped,
+    status: 'success',
+  })
 }

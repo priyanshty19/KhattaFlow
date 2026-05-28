@@ -1,19 +1,20 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import {
   Mail, TrendingUp, CreditCard, Landmark, ShieldCheck,
   Percent, BarChart2, AlertCircle, CheckCircle2, ChevronDown, ChevronUp,
-  RefreshCw, ArrowDownCircle, ArrowUpCircle, Wallet,
+  RefreshCw, ArrowDownCircle, ArrowUpCircle, Wallet, Zap,
 } from 'lucide-react'
 import { ParsedFinancialEmail, FinancialEmailType, FinancialCategoryHint } from '@/lib/engines/financial-email-parser'
+import { autoAssignAll } from '@/lib/utils/email-auto-assign'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type Step = 'idle' | 'scanning' | 'preview' | 'importing' | 'done' | 'error'
+type Step = 'idle' | 'scanning' | 'preview' | 'done' | 'error'
 
-interface Category { id: string; name: string; type: string }
+interface Category { id: string; name: string; type: string; slug: string }
 
 interface SectionConfig {
   key: string
@@ -22,6 +23,18 @@ interface SectionConfig {
   icon: React.ReactNode
   hint: FinancialCategoryHint
   color: string
+}
+
+// Extends ParsedFinancialEmail with server-side enrichment
+interface EnrichedEmail extends ParsedFinancialEmail {
+  suggestedCategorySlug?: string | null
+}
+
+interface ScanProgress {
+  scanned: number
+  total: number
+  found: number
+  phase: 'fetching' | 'parsing' | 'ai_parsing'
 }
 
 // ── Section definitions ────────────────────────────────────────────────────────
@@ -138,9 +151,15 @@ function sectionColorClass(color: string, variant: 'border' | 'text' | 'bg') {
   return map[color]?.[variant] ?? ''
 }
 
+function phaseLabel(phase: ScanProgress['phase']): string {
+  if (phase === 'ai_parsing') return 'AI parsing…'
+  if (phase === 'parsing') return 'Parsing emails…'
+  return 'Fetching emails…'
+}
+
 // ── Metadata preview ──────────────────────────────────────────────────────────
 
-function MetaChips({ item }: { item: ParsedFinancialEmail }) {
+function MetaChips({ item }: { item: EnrichedEmail }) {
   const chips: string[] = []
   const m = item.metadata
 
@@ -185,21 +204,28 @@ function MetaChips({ item }: { item: ParsedFinancialEmail }) {
 
 interface SectionProps {
   section: SectionConfig
-  items: ParsedFinancialEmail[]
+  items: EnrichedEmail[]
   assignments: Record<string, string>
   categories: Category[]
   onAssign: (gmailId: string, catId: string) => void
-  onBulkAssign: (gmailId: string[], catId: string) => void
+  onBulkAssign: (gmailIds: string[], catId: string) => void
 }
 
 function SectionPanel({ section, items, assignments, categories, onAssign, onBulkAssign }: SectionProps) {
   const [open, setOpen] = useState(true)
   const [bulkCat, setBulkCat] = useState('')
 
-  const relevantCats = categories.filter(c => c.type === section.hint || c.type === 'expense')
+  const INVESTMENT_SLUGS = new Set(['investments', 'dividends', 'interest-income', 'savings'])
+  const relevantCats = categories.filter(c => {
+    if (c.type === section.hint || c.type === 'expense') return true
+    // Show investment categories in sections that may contain investment-platform debits
+    if (section.hint === 'expense' &&
+        items.some(i => i.suggestedCategorySlug && INVESTMENT_SLUGS.has(i.suggestedCategorySlug))) {
+      return c.type === 'investment' || c.type === 'savings'
+    }
+    return false
+  })
   const allAssigned = items.every(i => assignments[i.gmailMessageId])
-
-  // cc_statement rows are informational only — no import
   const isInfoOnly = section.key === 'credit_cards' && items.every(i => i.type === 'cc_statement')
 
   const handleBulkApply = () => {
@@ -264,6 +290,11 @@ function SectionPanel({ section, items, assignments, categories, onAssign, onBul
                       <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${typeBadgeClass(item.type)}`}>
                         {typeLabel(item.type)}
                       </span>
+                      {item.suggestedCategorySlug && !assignments[item.gmailMessageId] && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-800 text-zinc-500 flex items-center gap-0.5">
+                          <Zap className="w-2.5 h-2.5" /> auto
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-3 mt-0.5">
                       <span className="text-xs text-zinc-500">{item.institution}</span>
@@ -311,7 +342,7 @@ function SectionPanel({ section, items, assignments, categories, onAssign, onBul
 
 // ── Summary bar ───────────────────────────────────────────────────────────────
 
-function SummaryBar({ results }: { results: ParsedFinancialEmail[] }) {
+function SummaryBar({ results }: { results: EnrichedEmail[] }) {
   const totals = results.reduce(
     (acc, r) => {
       if (r.type === 'cc_statement') return acc
@@ -339,84 +370,160 @@ function SummaryBar({ results }: { results: ParsedFinancialEmail[] }) {
   )
 }
 
+// ── Scanning progress bar ─────────────────────────────────────────────────────
+
+function ScanProgressView({ progress }: { progress: ScanProgress }) {
+  const pct = progress.total > 0 ? Math.round((progress.scanned / progress.total) * 100) : 0
+  return (
+    <div className="flex flex-col gap-3 py-4">
+      <div className="flex items-center justify-between text-xs text-zinc-400">
+        <span className="flex items-center gap-2">
+          <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-400" />
+          {phaseLabel(progress.phase)}
+        </span>
+        <span className="tabular-nums text-zinc-500">
+          {progress.scanned} / {progress.total || '…'} emails
+          {progress.found > 0 && <span className="text-emerald-400 ml-2">• {progress.found} found</span>}
+        </span>
+      </div>
+      <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      {progress.phase === 'ai_parsing' && (
+        <p className="text-xs text-zinc-500 flex items-center gap-1.5">
+          <Zap className="w-3 h-3 text-yellow-400" />
+          Using AI to extract amounts from unrecognised emails…
+        </p>
+      )}
+    </div>
+  )
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function FinancialFetchFlow() {
   const [step, setStep] = useState<Step>('idle')
   const [monthsBack, setMonthsBack] = useState(3)
-  const [results, setResults] = useState<ParsedFinancialEmail[]>([])
+  const [results, setResults] = useState<EnrichedEmail[]>([])
   const [assignments, setAssignments] = useState<Record<string, string>>({})
   const [categories, setCategories] = useState<Category[]>([])
   const [importCount, setImportCount] = useState(0)
+  const [dedupSkipped, setDedupSkipped] = useState(0)
   const [isImporting, setIsImporting] = useState(false)
-  const [scanStats, setScanStats] = useState({ scanned: 0, skipped: 0 })
+  const [scanStats, setScanStats] = useState({ scanned: 0, regexSkipped: 0, usedIncremental: false })
   const [connected, setConnected] = useState<boolean | null>(null)
+  const [scanProgress, setScanProgress] = useState<ScanProgress>({ scanned: 0, total: 0, found: 0, phase: 'fetching' })
+  const abortRef = useRef<AbortController | null>(null)
 
-  // Check connection on mount
-  useState(() => {
+  // Check Gmail connection on mount
+  useEffect(() => {
     fetch('/api/connect/gmail/status')
       .then(r => r.json())
       .then(d => setConnected(d.connected))
       .catch(() => setConnected(false))
-  })
-
-  const loadCategories = useCallback(async () => {
-    if (categories.length) return
-    const res = await fetch('/api/categories')
-    if (res.ok) setCategories(await res.json())
-  }, [categories.length])
-
-  const autoAssign = useCallback((items: ParsedFinancialEmail[], cats: Category[]) => {
-    const auto: Record<string, string> = {}
-    for (const item of items) {
-      if (item.type === 'cc_statement') continue
-      const match =
-        cats.find(c => c.type === item.categoryHint) ??
-        cats.find(c => c.type === 'expense')
-      if (match) auto[item.gmailMessageId] = match.id
-    }
-    return auto
   }, [])
+
+  const loadCategories = useCallback(async (): Promise<Category[]> => {
+    if (categories.length) return categories
+    const res = await fetch('/api/categories')
+    if (res.ok) {
+      const data: Category[] = await res.json()
+      setCategories(data)
+      return data
+    }
+    return []
+  }, [categories])
+
+  // Auto-assign categories — delegates to shared utility (also used by GmailOnboardModal)
+  const autoAssign = useCallback(
+    (items: EnrichedEmail[], cats: Category[]) => autoAssignAll(items, cats),
+    []
+  )
 
   const handleScan = async () => {
     setStep('scanning')
-    const cats = await (async () => {
-      if (categories.length) return categories
-      const res = await fetch('/api/categories')
-      if (res.ok) {
-        const data = await res.json()
-        setCategories(data)
-        return data as Category[]
-      }
-      return [] as Category[]
-    })()
+    setScanProgress({ scanned: 0, total: 0, found: 0, phase: 'fetching' })
+
+    const cats = await loadCategories()
+
+    // Abort any ongoing scan
+    abortRef.current?.abort()
+    const controller = new AbortController()
+    abortRef.current = controller
 
     try {
       const res = await fetch('/api/financial-fetch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ monthsBack }),
+        signal: controller.signal,
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
 
-      if (!data.count) {
-        toast.info('No financial emails found for this period')
-        setStep('idle')
-        return
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error ?? 'Scan failed')
       }
 
-      // Rehydrate dates (JSON loses Date objects)
-      const items: ParsedFinancialEmail[] = data.results.map((r: ParsedFinancialEmail) => ({
-        ...r,
-        date: r.date ? new Date(r.date as unknown as string) : null,
-      }))
+      // ── Read SSE stream ──────────────────────────────────────────────────────
+      const reader = res.body?.getReader()
+      if (!reader) throw new Error('No response body')
 
-      setResults(items)
-      setScanStats({ scanned: data.scanned, skipped: data.skipped })
-      setAssignments(autoAssign(items, cats))
-      setStep('preview')
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() ?? ''
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          try {
+            const event = JSON.parse(line.slice(6))
+
+            if (event.type === 'progress') {
+              setScanProgress({
+                scanned: event.scanned,
+                total: event.total,
+                found: event.found,
+                phase: event.phase,
+              })
+            } else if (event.type === 'done') {
+              const items: EnrichedEmail[] = event.results.map((r: EnrichedEmail) => ({
+                ...r,
+                date: r.date ? new Date(r.date as unknown as string) : null,
+              }))
+
+              if (!items.length) {
+                toast.info('No financial emails found for this period')
+                setStep('idle')
+                return
+              }
+
+              setResults(items)
+              setScanStats({
+                scanned: event.scanned,
+                regexSkipped: event.regexSkipped ?? 0,
+                usedIncremental: event.usedIncremental ?? false,
+              })
+              setAssignments(autoAssign(items, cats))
+              setStep('preview')
+            } else if (event.type === 'error') {
+              throw new Error(event.message)
+            }
+          } catch {
+            // skip malformed SSE lines
+          }
+        }
+      }
     } catch (e: unknown) {
+      if ((e as Error).name === 'AbortError') return
       toast.error(e instanceof Error ? e.message : 'Scan failed')
       setStep('error')
     }
@@ -442,8 +549,12 @@ export function FinancialFetchFlow() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
       setImportCount(data.count)
+      setDedupSkipped(data.dedupSkipped ?? 0)
       setStep('done')
-      toast.success(`Imported ${data.count} financial record${data.count !== 1 ? 's' : ''}`)
+      const msg = data.dedupSkipped
+        ? `Imported ${data.count} record${data.count !== 1 ? 's' : ''} · ${data.dedupSkipped} already imported (skipped)`
+        : `Imported ${data.count} financial record${data.count !== 1 ? 's' : ''}`
+      toast.success(msg)
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Import failed')
       setStep('error')
@@ -464,10 +575,18 @@ export function FinancialFetchFlow() {
     })
   }
 
-  const reset = () => { setStep('idle'); setResults([]); setAssignments({}); setIsImporting(false) }
+  const reset = () => {
+    abortRef.current?.abort()
+    setStep('idle')
+    setResults([])
+    setAssignments({})
+    setIsImporting(false)
+    setDedupSkipped(0)
+  }
 
   const assignedCount = results.filter(r => r.type !== 'cc_statement' && assignments[r.gmailMessageId]).length
   const importableCount = results.filter(r => r.type !== 'cc_statement').length
+  const autoFilledCount = results.filter(r => r.suggestedCategorySlug && assignments[r.gmailMessageId]).length
 
   // ── Render states ─────────────────────────────────────────────────────────
 
@@ -490,6 +609,9 @@ export function FinancialFetchFlow() {
         <p className="text-zinc-200 font-medium">
           {importCount} financial record{importCount !== 1 ? 's' : ''} imported
         </p>
+        {dedupSkipped > 0 && (
+          <p className="text-xs text-zinc-500">{dedupSkipped} already imported (skipped to prevent duplicates)</p>
+        )}
         <button onClick={reset} className="text-sm text-zinc-400 hover:text-zinc-200 transition-colors">
           Scan again
         </button>
@@ -509,6 +631,20 @@ export function FinancialFetchFlow() {
     )
   }
 
+  if (step === 'scanning') {
+    return (
+      <div className="flex flex-col gap-2 py-2">
+        <ScanProgressView progress={scanProgress} />
+        <button
+          onClick={reset}
+          className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors self-center mt-1"
+        >
+          Cancel
+        </button>
+      </div>
+    )
+  }
+
   if (step === 'preview') {
     const visibleSections = SECTIONS.filter(s =>
       results.some(r => s.types.includes(r.type))
@@ -521,10 +657,16 @@ export function FinancialFetchFlow() {
           <div>
             <p className="text-sm text-zinc-300">
               Found <span className="text-emerald-400 font-semibold">{results.length}</span> financial records
-              {' '}<span className="text-zinc-500 text-xs">({scanStats.scanned} emails scanned, {scanStats.skipped} skipped)</span>
+              <span className="text-zinc-500 text-xs ml-1.5">
+                ({scanStats.scanned} scanned · {scanStats.regexSkipped} skipped
+                {scanStats.usedIncremental && ' · incremental sync'})
+              </span>
             </p>
             <p className="text-xs text-zinc-500 mt-0.5">
-              {assignedCount} of {importableCount} assigned — review categories below
+              {assignedCount} of {importableCount} assigned
+              {autoFilledCount > 0 && (
+                <span className="text-zinc-600 ml-1">· {autoFilledCount} auto-categorised <Zap className="inline w-2.5 h-2.5 text-yellow-400" /></span>
+              )}
             </p>
           </div>
           <button
@@ -570,7 +712,7 @@ export function FinancialFetchFlow() {
     )
   }
 
-  // ── Idle / scanning ───────────────────────────────────────────────────────
+  // ── Idle ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="flex flex-col gap-4">
@@ -616,11 +758,9 @@ export function FinancialFetchFlow() {
 
       <button
         onClick={handleScan}
-        disabled={step === 'scanning'}
-        className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 disabled:bg-zinc-800 disabled:text-zinc-600 text-zinc-950 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2"
+        className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2"
       >
-        {step === 'scanning' && <RefreshCw className="w-4 h-4 animate-spin" />}
-        {step === 'scanning' ? 'Scanning Gmail…' : 'Fetch All Financial Data'}
+        Fetch All Financial Data
       </button>
     </div>
   )

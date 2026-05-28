@@ -122,6 +122,7 @@ const SUBJECT_QUERY = [
   'subject:"SIP execution"',
   'subject:"mutual fund"',
   'subject:"units allotted"',
+  'subject:"units allocated"',
   'subject:"redemption confirmation"',
   'subject:"dividend credit"',
   'subject:"IDCW payout"',
@@ -136,8 +137,41 @@ const SUBJECT_QUERY = [
   'subject:"salary credited"',
 ].join(' OR ')
 
+// ── Subjects to exclude from query ────────────────────────────────────────────
+// These match our sender/subject rules but are NOT transactions:
+//   - SIP reminders ("due in X days") — future tense, not executed yet
+//   - SEBI-mandated portfolio/disclosure emails — no transaction amount
+//   - Bank account statements (PDF) — a period statement, not a single transaction
+//   - Marketing/promotional emails — example amounts, not real debits
+const EXCLUDE_SUBJECT_QUERY = [
+  '-subject:"instalment due"',         // Groww SIP reminder
+  '-subject:"sip due"',                // alternate SIP reminder
+  '-subject:"portfolio disclosure"',   // SEBI regulatory disclosure
+  '-subject:"portfolio of schemes"',   // monthly portfolio PDF
+  '-subject:"month-end valuation"',    // MF valuation email
+  '-subject:"fortnightly portfolio"',  // bi-monthly portfolio PDF
+  '-subject:"monthly portfolio"',      // monthly portfolio PDF
+  '-subject:"half yearly portfolio"',  // half-yearly portfolio PDF
+  '-subject:"total expense ratio"',    // SEBI TER notice
+  '-subject:"notice to the investors"',// SEBI investor notice
+  '-subject:"newsletter"',             // NSDL / AMC newsletters
+  '-subject:"getting started with"',   // Groww onboarding/marketing
+  '-subject:"simple guide to"',        // Groww MTF marketing
+  '-subject:"things to know before"',  // Groww educational marketing
+  '-subject:"key things to know"',     // Groww educational marketing
+  '-subject:"personal loan"',          // bank loan upsell spam
+  '-subject:"statement from"',         // bank account statement (PDF)
+].join(' ')
+
+// ── Subject-level skip patterns (defence-in-depth inside parseMessages) ───────
+// Catches emails that slip through the query exclusion (e.g. via subject-query match)
+const SKIP_SUBJECT_RE = /instalment\s+due\s+in\s+\d+|sip\s+(?:due|reminder)|portfolio\s+disclosure|portfolio\s+of\s+schemes|month.end\s+valuation|fortnightly\s+portfolio|monthly\s+portfolio|half.yearly\s+portfolio|total\s+expense\s+ratio|notice\s+to\s+(?:the\s+)?investors|newsletter|getting\s+started\s+with|simple\s+guide\s+to|things\s+to\s+know\s+before|key\s+things\s+to\s+know|personal\s+loan.*salary|salary.*personal\s+loan/i
+
+// ── Body-level skip: future-tense "will be deducted" = reminder, not transaction
+const SKIP_BODY_RE = /(?:will\s+be\s+deducted|instalment\s+will\s+be|ensure\s+your\s+bank\s+balance\s+is\s+ready)/i
+
 export function buildFinancialQuery(monthsBack: number): string {
-  return `((${SENDER_QUERY}) OR (${SUBJECT_QUERY})) newer_than:${monthsBack}m`
+  return `((${SENDER_QUERY}) OR (${SUBJECT_QUERY})) ${EXCLUDE_SUBJECT_QUERY} newer_than:${monthsBack}m`
 }
 
 // ── Email body decoder ────────────────────────────────────────────────────────
@@ -247,11 +281,12 @@ function detectInstitution(sender: string, subject: string, body: string): strin
   if (s.includes('BAJAJ ALLIANZ') || s.includes('BAJAJALLIANZ')) return 'Bajaj Allianz'
   if (s.includes('LIC')) return 'LIC'
   if (s.includes('SBI CARD') || s.includes('SBICARD')) return 'SBI Card'
-  if (s.includes('HDFC')) return (s.includes('CREDIT') || s.includes('CARD')) ? 'HDFC Credit Card' : 'HDFC Bank'
-  if (s.includes('ICICI')) return (s.includes('CREDIT') || s.includes('CARD')) ? 'ICICI Credit Card' : 'ICICI Bank'
+  // Use "CREDIT CARD" as a compound phrase — "credited to" alone must NOT trigger credit card detection
+  if (s.includes('HDFC')) return (s.includes('CREDIT CARD') || s.includes('CREDITCARD')) ? 'HDFC Credit Card' : 'HDFC Bank'
+  if (s.includes('ICICI')) return (s.includes('CREDIT CARD') || s.includes('CREDITCARD')) ? 'ICICI Credit Card' : 'ICICI Bank'
   if (s.includes('SBI')) return 'SBI'
-  if (s.includes('AXIS')) return (s.includes('CREDIT') || s.includes('CARD')) ? 'Axis Credit Card' : 'Axis Bank'
-  if (s.includes('KOTAK')) return (s.includes('CREDIT') || s.includes('CARD')) ? 'Kotak Credit Card' : 'Kotak Bank'
+  if (s.includes('AXIS')) return (s.includes('CREDIT CARD') || s.includes('CREDITCARD')) ? 'Axis Credit Card' : 'Axis Bank'
+  if (s.includes('KOTAK')) return (s.includes('CREDIT CARD') || s.includes('CREDITCARD')) ? 'Kotak Credit Card' : 'Kotak Bank'
   if (s.includes('YES BANK') || s.includes('YESBANK')) return 'Yes Bank'
   if (s.includes('INDUSIND')) return 'IndusInd Bank'
   if (s.includes('IDFC')) return 'IDFC First Bank'
@@ -291,6 +326,9 @@ function detectType(subject: string, body: string): FinancialEmailType {
   if (/\b(credit\s*card|card)\b.*\bstatement\b|\bstatement\b.*\b(credit\s*card|card)\b/.test(c)) return 'cc_statement'
   if (/\b(minimum\s*(?:amount\s*)?due|outstanding\s*balance|payment\s*due)\b/.test(c)) return 'cc_statement'
   if (/\bcredit\s*card\b.*\bpayment\b|\bcard\s*payment\b/.test(c)) return 'cc_payment'
+  // HDFC-style auto-debit alert: "debited from account...credited to [credit card account]"
+  // The word "payment" may be absent so we catch the debit→creditcard pattern explicitly.
+  if (/debited.*credited\s+to.*credit\s*card|credit\s*card.*account.*debited/i.test(c)) return 'cc_payment'
 
   // Loan / EMI
   if (/\b(emi|equated\s*monthly)\b/.test(c) || /\bloan\b.*\b(deducted|paid|emi)\b/.test(c)) return 'loan_emi'
@@ -305,8 +343,8 @@ function detectType(subject: string, body: string): FinancialEmailType {
   // Salary
   if (/\b(salary|payroll|ctc|stipend)\b.*\b(credit|paid|transfer)\b|\b(credit|paid|transfer)\b.*\b(salary|payroll)\b/.test(c)) return 'salary_credit'
 
-  // UPI
-  if (/\bupi\b.*\b(transact|transfer|pay|debit|credit)\b/.test(c)) return 'upi_transaction'
+  // UPI — "transact" without right-boundary also catches "transaction"; "pay" catches "payment"
+  if (/\bupi\b.*\b(txn|transaction|transact|transfer|payment|pay|debit|credit)\b/i.test(c)) return 'upi_transaction'
 
   // Generic bank
   if (/\b(debit|debited|withdrawn|spent|charged)\b/.test(c)) return 'bank_debit'
@@ -353,9 +391,14 @@ export function directionFor(type: FinancialEmailType): 'debit' | 'credit' {
 
 function extractMFMeta(body: string): Record<string, unknown> {
   const nav = body.match(/\bNAV\b[:\s]*(?:Rs\.?|INR|₹)?\s*([\d.]+)/i)
-  const units = body.match(/(?:units?\s*(?:allotted|purchased|bought)?)[:\s]*([\d,.]+)/i)
+  const units = body.match(/(?:units?\s*(?:allotted|allocated|purchased|bought)?)[:\s]*([\d,.]+)/i)
   const folio = body.match(/(?:folio\s*(?:no\.?|number)?)[:\s]*([A-Z0-9\/\-]+)/i)
-  const fund = body.match(/(?:fund\s*(?:name)?|scheme\s*(?:name)?)[:\s]*([^\n\r:]{5,80})/i)
+  // Fund name: prefer Groww-style "SCHEME NAME <Name> SIP|NAV|INVESTMENT" pattern first,
+  // then a labelled "Fund Name:" / "Scheme Name:" field.
+  // Both require the name to start with a capital letter to avoid matching CSS/template text.
+  const fund =
+    body.match(/SCHEME\s+NAME\s+([A-Z][A-Za-z0-9 \-()&]{4,70}?)(?=\s+(?:SIP|NAV|INVESTMENT|ISIN|FOLIO|PLAN|GROWTH|DIRECT|UNITS))/i) ??
+    body.match(/(?:fund\s+name|scheme\s+name)\s*:?\s*([A-Z][A-Za-z0-9 \-()&]{4,70}?)(?=\s*(?:\n|NAV\b|ISIN\b|Folio\b|SIP\b|Investment\b))/i)
   const isin = body.match(/\bISIN\b[:\s]*([A-Z]{2}[A-Z0-9]{10})/i)
   return {
     nav: nav ? parseFloat(nav[1]) : null,
@@ -479,7 +522,11 @@ function buildDescription(
     case 'salary_credit':
       return `Salary Credit — ${institution}`
     case 'upi_transaction': {
-      const ref = body.match(/(?:UPI\s*Ref|Ref\s*No)[:\s]*([A-Z0-9]{6,20})/i)
+      // HDFC format: "debited from account XXXX to VPA abc@xyz PAYEE NAME on DD-MM-YY"
+      const payee = body.match(/to\s+VPA\s+\S+\s+(.+?)\s+on\s+\d{2}-\d{2}-\d{2}/i)
+      if (payee) return `UPI — ${payee[1].trim()}`
+      // Fallback: UPI reference number
+      const ref = body.match(/(?:UPI\s*Ref(?:erence)?|Ref\s*No)[:\s]*([A-Z0-9]{6,20})/i)
       return ref ? `UPI — ${ref[1]}` : `UPI Transaction — ${institution}`
     }
     case 'bank_debit':
@@ -527,6 +574,12 @@ export class FinancialEmailParser {
       const sender = getSender(msg)
 
       if (!body && !subject) { skipped++; continue }
+
+      // ── Subject/body-level pre-filter ──────────────────────────────────────
+      // Skip regulatory disclosures, SIP reminders, and marketing emails that
+      // slipped through the Gmail query exclusion (e.g. via a subject-keyword match)
+      if (SKIP_SUBJECT_RE.test(subject)) { skipped++; continue }
+      if (SKIP_BODY_RE.test(body.slice(0, 600))) { skipped++; continue }
 
       const type = detectType(subject, body)
       const institution = detectInstitution(sender, subject, body)
@@ -590,7 +643,8 @@ export class FinancialEmailParser {
           break
       }
 
-      if (amount <= 0 && type !== 'cc_statement') { skipped++; continue }
+      // NaN <= 0 is false in JS — explicitly guard against NaN slipping through
+      if ((isNaN(amount) || amount <= 0) && type !== 'cc_statement') { skipped++; continue }
 
       const description = buildDescription(type, institution, body, metadata)
 
