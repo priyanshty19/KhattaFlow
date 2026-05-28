@@ -4,6 +4,7 @@ Full history of every branch created, updated, and merged in this repo.
 
 | Date | Branch | Event | Actor | PR | Notes |
 |------|--------|-------|-------|----|-------|
+| 2026-05-28 | `fix/captcha-desktop-visibility` | 📤 Pushed | @priyanshty19 | — | — |
 | 2026-05-28 | `fix/captcha-desktop-visibility` | 🚀 Merged | @priyanshty19 | [#16](https://github.com/priyanshty19/fingrid/pull/16) | [FIX] Captcha Desktop Visibility |
 | 2026-05-28 | `fix/captcha-desktop-visibility` | 📤 Pushed | @priyanshty19 | — | — |
 | 2026-05-28 | `fix/captcha-desktop-visibility` | 📤 Pushed | @priyanshty19 | — | — |
