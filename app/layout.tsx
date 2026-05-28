@@ -15,7 +15,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider afterSignOutUrl="/sign-in" signInFallbackRedirectUrl="/" signUpFallbackRedirectUrl="/onboarding">
+    <ClerkProvider
+      signInFallbackRedirectUrl="/"
+      signUpFallbackRedirectUrl="/onboarding"
+      signOutFallbackRedirectUrl="/sign-in"
+    >
       <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
         <body className="bg-background text-foreground antialiased">
           <QueryProvider>
