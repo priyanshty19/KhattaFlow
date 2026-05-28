@@ -16,8 +16,9 @@ export default function SignInPage() {
           fontFamily: 'var(--font-geist-sans)',
         },
         elements: {
-          rootBox: 'w-full',
-          card: 'bg-zinc-900 border border-zinc-800 shadow-2xl shadow-black/40 !rounded-2xl !min-h-[700px]',
+          rootBox: 'w-full !overflow-visible',
+          card: 'bg-zinc-900 border border-zinc-800 shadow-2xl shadow-black/40 !rounded-2xl !min-h-[800px] !p-8 !overflow-visible',
+          cardBox: '!overflow-visible',
           headerTitle: 'text-zinc-100 font-semibold',
           headerSubtitle: 'text-zinc-400',
           socialButtonsBlockButton:
