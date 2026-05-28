@@ -21,9 +21,37 @@ export async function POST(req: Request) {
   const clerkUser = await currentUser()
   const email = clerkUser?.emailAddresses[0]?.emailAddress ?? ''
 
-  // Remove any orphaned record with the same email but a different Clerk ID
+  // Migrate data from any prior Clerk user with the same email (e.g. dev→prod switch).
+  // Instead of deleting the old record (which would cascade-delete all transactions),
+  // we re-key every child row to the new userId, then remove the now-empty old user shell.
   if (email) {
-    await prisma.user.deleteMany({ where: { email, id: { not: userId } } })
+    const oldUsers = await prisma.user.findMany({
+      where: { email, id: { not: userId } },
+      select: { id: true },
+    })
+
+    for (const old of oldUsers) {
+      const oldId = old.id
+      // Re-key every child table that uses userId as a plain string column
+      await prisma.$transaction([
+        prisma.$executeRaw`UPDATE categories          SET "userId" = ${userId} WHERE "userId" = ${oldId}`,
+        prisma.$executeRaw`UPDATE transactions        SET "userId" = ${userId} WHERE "userId" = ${oldId}`,
+        prisma.$executeRaw`UPDATE budgets             SET "userId" = ${userId} WHERE "userId" = ${oldId}`,
+        prisma.$executeRaw`UPDATE recurring_rules     SET "userId" = ${userId} WHERE "userId" = ${oldId}`,
+        prisma.$executeRaw`UPDATE imports             SET "userId" = ${userId} WHERE "userId" = ${oldId}`,
+        prisma.$executeRaw`UPDATE monthly_summaries   SET "userId" = ${userId} WHERE "userId" = ${oldId}`,
+        prisma.$executeRaw`UPDATE otp_verifications   SET "userId" = ${userId} WHERE "userId" = ${oldId}`,
+        prisma.$executeRaw`UPDATE oauth_connections   SET "userId" = ${userId} WHERE "userId" = ${oldId}`,
+        prisma.$executeRaw`UPDATE email_import_logs   SET "userId" = ${userId} WHERE "userId" = ${oldId}`,
+        prisma.$executeRaw`UPDATE credit_card_preferences SET "userId" = ${userId} WHERE "userId" = ${oldId}`,
+        prisma.$executeRaw`UPDATE card_recommendations    SET "userId" = ${userId} WHERE "userId" = ${oldId}`,
+        prisma.$executeRaw`UPDATE card_recommendation_feedback SET "userId" = ${userId} WHERE "userId" = ${oldId}`,
+        prisma.$executeRaw`UPDATE card_apply_intents  SET "userId" = ${userId} WHERE "userId" = ${oldId}`,
+        prisma.$executeRaw`UPDATE user_credit_cards   SET "userId" = ${userId} WHERE "userId" = ${oldId}`,
+        // Now the old shell has no children — safe to delete
+        prisma.user.delete({ where: { id: oldId } }),
+      ])
+    }
   }
 
   await prisma.$transaction(async (tx) => {
