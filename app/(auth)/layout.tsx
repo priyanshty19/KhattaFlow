@@ -24,77 +24,64 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-zinc-950">
 
       {/* ════════════════════════════════════════════════════════
-          MOBILE  (< lg)  — stacked: compact brand banner → form
+          MOBILE ONLY — compact brand banner (hidden on desktop)
           ════════════════════════════════════════════════════════ */}
-      <div className="lg:hidden flex flex-col">
+      <div className="lg:hidden relative overflow-hidden px-6 pt-10 pb-8">
+        {/* Ambient glow */}
+        <div className="pointer-events-none absolute inset-0"
+          style={{ background: 'radial-gradient(ellipse 120% 80% at 50% 0%, rgba(16,185,129,0.13) 0%, transparent 65%)' }} />
+        {/* Dot-grid */}
+        <div className="pointer-events-none absolute inset-0 opacity-15"
+          style={{ backgroundImage: 'radial-gradient(circle, #3f3f46 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
 
-        {/* ── Mobile brand banner ── */}
-        <div className="relative overflow-hidden px-6 pt-10 pb-8">
-          {/* Ambient glow */}
-          <div className="pointer-events-none absolute inset-0"
-            style={{ background: 'radial-gradient(ellipse 120% 80% at 50% 0%, rgba(16,185,129,0.13) 0%, transparent 65%)' }} />
-          {/* Dot-grid */}
-          <div className="pointer-events-none absolute inset-0 opacity-15"
-            style={{ backgroundImage: 'radial-gradient(circle, #3f3f46 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+        <div className="relative z-10 flex flex-col items-center text-center gap-4">
+          <LogoMark size="lg" />
+          <div>
+            <h1 className="text-2xl font-bold text-zinc-100 leading-snug">
+              Your finances,<br />finally clear.
+            </h1>
+            <p className="mt-1.5 text-zinc-400 text-sm">
+              Track, save &amp; invest — powered by AI.
+            </p>
+          </div>
 
-          <div className="relative z-10 flex flex-col items-center text-center gap-4">
-            <LogoMark size="lg" />
-            <div>
-              <h1 className="text-2xl font-bold text-zinc-100 leading-snug">
-                Your finances,<br />finally clear.
-              </h1>
-              <p className="mt-1.5 text-zinc-400 text-sm">
-                Track, save &amp; invest — powered by AI.
-              </p>
+          {/* Condensed stat chips */}
+          <div className="flex flex-wrap justify-center gap-2 w-full max-w-xs">
+            <div className="flex items-center gap-2 bg-zinc-900/90 border border-zinc-800/70 rounded-xl px-3 py-2 backdrop-blur-sm">
+              <div className="w-6 h-6 rounded-lg bg-zinc-800 flex items-center justify-center shrink-0">
+                <TrendingUp className="w-3 h-3 text-zinc-400" />
+              </div>
+              <div className="text-left">
+                <p className="text-[10px] text-zinc-500 uppercase tracking-widest leading-none">Income</p>
+                <p className="text-sm font-bold text-zinc-100 tabular-nums leading-tight">₹1,08,500</p>
+              </div>
             </div>
-
-            {/* Two condensed stat chips */}
-            <div className="flex flex-wrap justify-center gap-2 w-full max-w-xs">
-              {/* Income chip */}
-              <div className="flex items-center gap-2 bg-zinc-900/90 border border-zinc-800/70 rounded-xl px-3 py-2 backdrop-blur-sm">
-                <div className="w-6 h-6 rounded-lg bg-zinc-800 flex items-center justify-center shrink-0">
-                  <TrendingUp className="w-3 h-3 text-zinc-400" />
-                </div>
-                <div className="text-left">
-                  <p className="text-[10px] text-zinc-500 uppercase tracking-widest leading-none">Income</p>
-                  <p className="text-sm font-bold text-zinc-100 tabular-nums leading-tight">₹1,08,500</p>
-                </div>
+            <div className="flex items-center gap-2 bg-zinc-900/90 border border-zinc-800/70 rounded-xl px-3 py-2 backdrop-blur-sm">
+              <div className="w-6 h-6 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
+                <ArrowUpRight className="w-3 h-3 text-emerald-400" />
               </div>
-              {/* Savings chip */}
-              <div className="flex items-center gap-2 bg-zinc-900/90 border border-zinc-800/70 rounded-xl px-3 py-2 backdrop-blur-sm">
-                <div className="w-6 h-6 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
-                  <ArrowUpRight className="w-3 h-3 text-emerald-400" />
-                </div>
-                <div className="text-left">
-                  <p className="text-[10px] text-zinc-500 uppercase tracking-widest leading-none">Saved</p>
-                  <p className="text-sm font-bold text-emerald-400 tabular-nums leading-tight">₹68,870</p>
-                </div>
+              <div className="text-left">
+                <p className="text-[10px] text-zinc-500 uppercase tracking-widest leading-none">Saved</p>
+                <p className="text-sm font-bold text-emerald-400 tabular-nums leading-tight">₹68,870</p>
               </div>
-              {/* AI chip */}
-              <div className="flex items-center gap-2 bg-emerald-500/8 border border-emerald-500/20 rounded-xl px-3 py-2">
-                <Brain className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <p className="text-[11px] text-emerald-400 font-medium">63.5% savings — best month yet</p>
-              </div>
+            </div>
+            <div className="flex items-center gap-2 bg-emerald-500/8 border border-emerald-500/20 rounded-xl px-3 py-2">
+              <Brain className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <p className="text-[11px] text-emerald-400 font-medium">63.5% savings — best month yet</p>
             </div>
           </div>
         </div>
-
-        {/* ── Mobile Clerk form ── */}
-        <div className="flex flex-col items-center px-5 py-8">
-          <div className="w-full max-w-md">
-            {children}
-          </div>
-        </div>
-
       </div>
 
       {/* ════════════════════════════════════════════════════════
-          DESKTOP  (≥ lg)  — two-column split screen
+          SHARED WRAPPER — single-column on mobile, two-column on desktop.
+          {children} is rendered ONCE here so Clerk mounts exactly one
+          SignUp/SignIn instance and Turnstile always targets a visible node.
           ════════════════════════════════════════════════════════ */}
-      <div className="hidden lg:grid lg:grid-cols-2 min-h-screen">
+      <div className="lg:grid lg:grid-cols-2 lg:min-h-screen">
 
-        {/* ── Left panel — brand + full preview ── */}
-        <div className="relative flex flex-col justify-between p-12 overflow-hidden border-r border-zinc-800/60">
+        {/* ── Left panel — brand + full preview (desktop only) ── */}
+        <div className="hidden lg:flex lg:flex-col lg:justify-between p-12 relative overflow-hidden border-r border-zinc-800/60">
 
           {/* Ambient glow */}
           <div className="pointer-events-none absolute inset-0"
@@ -181,11 +168,10 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        {/* ── Right panel — Clerk widget ── */}
-        {/* No overflow-y-auto here — Clerk's Cloudflare CAPTCHA uses position:fixed
-            internally, which gets clipped by overflow:auto ancestors in Chrome.
-            Let the page itself scroll if needed; the panel just centres its content. */}
-        <div className="flex flex-col items-center justify-center px-8 py-12">
+        {/* ── Form panel — always rendered, full-width on mobile / right column on desktop ──
+            No overflow-y-auto: Clerk's Cloudflare Turnstile uses position:fixed internally
+            and gets clipped by overflow:auto ancestors in Chrome. */}
+        <div className="flex flex-col items-center justify-center px-5 py-8 lg:px-8 lg:py-12">
           <div className="w-full max-w-md">
             {children}
           </div>
