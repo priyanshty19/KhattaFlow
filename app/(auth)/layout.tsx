@@ -182,7 +182,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         </div>
 
         {/* ── Right panel — Clerk widget ── */}
-        <div className="flex flex-col items-center justify-center px-8 py-12">
+        <div className="flex flex-col items-center justify-start overflow-y-auto px-8 py-16">
           <div className="w-full max-w-sm">
             {children}
           </div>
