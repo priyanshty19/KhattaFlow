@@ -18,10 +18,10 @@ jobs:
       pull-requests: read
 
     steps:
-      - name: Checkout master
+      - name: Checkout meta branch
         uses: actions/checkout@v4
         with:
-          ref: master
+          ref: meta
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update branch log
