@@ -4,6 +4,7 @@ Full history of every branch created, updated, and merged in this repo.
 
 | Date | Branch | Event | Actor | PR | Notes |
 |------|--------|-------|-------|----|-------|
+| 2026-05-28 | `hotfix/clerk-layout-prop` | 🚀 Merged | @priyanshty19 | [#11](https://github.com/priyanshty19/fingrid/pull/11) | [HOTFIX] Clerk Layout Prop |
 | 2026-05-28 | `hotfix/clerk-layout-prop` | 📤 Pushed | @priyanshty19 | — | — |
 | 2026-05-28 | `hotfix/clerk-layout-prop` | ✅ Created | @priyanshty19 | — | — |
 | 2026-05-28 | `fix/clerk-csp-warnings` | 📤 Pushed | @priyanshty19 | — | — |
