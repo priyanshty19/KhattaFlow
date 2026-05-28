@@ -182,7 +182,9 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         </div>
 
         {/* ── Right panel — Clerk widget ── */}
-        <div className="flex flex-col items-center justify-start overflow-y-auto px-8 py-16">
+        {/* py-10 (not py-16) keeps the Cloudflare CAPTCHA checkbox in the
+            visible viewport so Clerk can unblock the Google OAuth button */}
+        <div className="flex flex-col items-center justify-center overflow-y-auto px-8 py-10 min-h-0">
           <div className="w-full max-w-sm">
             {children}
           </div>
