@@ -185,8 +185,8 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         {/* No overflow-y-auto here — Clerk's Cloudflare CAPTCHA uses position:fixed
             internally, which gets clipped by overflow:auto ancestors in Chrome.
             Let the page itself scroll if needed; the panel just centres its content. */}
-        <div className="flex flex-col items-center justify-center px-8 py-12 overflow-visible">
-          <div className="w-full max-w-lg">
+        <div className="flex flex-col items-center justify-center px-8 py-12">
+          <div className="w-full max-w-md">
             {children}
           </div>
         </div>
