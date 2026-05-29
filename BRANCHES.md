@@ -4,6 +4,7 @@ Full history of every branch created, updated, and merged in this repo.
 
 | Date | Branch | Event | Actor | PR | Notes |
 |------|--------|-------|-------|----|-------|
+| 2026-05-29 | `fix/goals-wizard-flow` | 📤 Pushed | @priyanshty19 | — | — |
 | 2026-05-29 | `feat/goals-achiever` | 🚀 Merged | @priyanshty19 | [#21](https://github.com/priyanshty19/fingrid/pull/21) | feat: Goals Achiever — projections, allocation optimizer & AI recommendations |
 | 2026-05-29 | `feat/goals-achiever` | ✅ Created | @priyanshty19 | — | — |
 | 2026-05-29 | `feat/gmail-auto-connect` | 🚀 Merged | @priyanshty19 | [#20](https://github.com/priyanshty19/fingrid/pull/20) | [FEAT] Feat/Gmail Auto Connect |
