@@ -4,15 +4,14 @@ import { NextResponse } from 'next/server'
 import { google } from 'googleapis'
 import { prisma } from '@/lib/prisma'
 import { encryptToken } from '@/lib/utils/encrypt'
+import { getBaseUrl, getGmailRedirectUri } from '@/lib/utils/base-url'
 import { createHmac } from 'crypto'
 
-const appUrl = () => process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-
-function getOAuth2Client() {
+function getOAuth2Client(req: Request) {
   return new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    process.env.GOOGLE_REDIRECT_URI
+    getGmailRedirectUri(req)
   )
 }
 
@@ -23,12 +22,14 @@ function encodeState(userId: string): string {
   return Buffer.from(userId).toString('base64url') + '.' + hmac
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const appUrl = getBaseUrl(req)
+
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-    return NextResponse.redirect(`${appUrl()}/settings?error=gmail_not_configured`)
+    return NextResponse.redirect(`${appUrl}/settings?error=gmail_not_configured`)
   }
 
   // ── Try auto-connect via Clerk's existing Google OAuth token ──────────────
@@ -43,7 +44,7 @@ export async function GET() {
     console.log('[gmail/connect] clerk_token=', accessToken ? 'present' : 'missing')
 
     if (accessToken) {
-      const oauth2Client = getOAuth2Client()
+      const oauth2Client = getOAuth2Client(req)
       oauth2Client.setCredentials({ access_token: accessToken })
       const gmail = google.gmail({ version: 'v1', auth: oauth2Client })
       const profile = await gmail.users.getProfile({ userId: 'me' })
@@ -68,7 +69,7 @@ export async function GET() {
           },
         })
         console.log('[gmail/connect] auto_connect_success stored gmailEmail=', gmailEmail)
-        return NextResponse.redirect(`${appUrl()}/settings?connected=gmail`)
+        return NextResponse.redirect(`${appUrl}/settings?connected=gmail`)
       }
     }
   } catch (autoErr) {
@@ -78,14 +79,14 @@ export async function GET() {
 
   // ── Dedicated Gmail OAuth flow (requests gmail.readonly explicitly) ───────
   const state = encodeState(userId)
-  const oauth2Client = getOAuth2Client()
+  const oauth2Client = getOAuth2Client(req)
   const url = oauth2Client.generateAuthUrl({
     access_type: 'offline',
     prompt: 'consent',
     scope: ['https://www.googleapis.com/auth/gmail.readonly'],
     state,
   })
-  console.log('[gmail/connect] step=oauth_redirect redirectUri=', process.env.GOOGLE_REDIRECT_URI)
+  console.log('[gmail/connect] step=oauth_redirect redirectUri=', getGmailRedirectUri(req))
   return NextResponse.redirect(url)
 }
 

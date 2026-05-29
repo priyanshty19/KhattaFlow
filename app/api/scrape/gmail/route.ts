@@ -19,10 +19,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Gmail not connected. Connect it in Settings.' }, { status: 400 })
   }
 
+  // No redirect URI needed: this client only refreshes existing tokens,
+  // it never runs a redirect-based authorization flow.
   const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
-    process.env.GOOGLE_REDIRECT_URI
+    process.env.GOOGLE_CLIENT_SECRET
   )
 
   oauth2Client.setCredentials({
