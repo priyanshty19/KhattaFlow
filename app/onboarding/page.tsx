@@ -111,7 +111,7 @@ export default function OnboardingPage() {
         }),
       })
       setStep('done')
-      setTimeout(() => router.push('/'), 2000)
+      setTimeout(() => router.push('/'), 3000)
     } catch (e) {
       console.error(e)
     } finally {
@@ -526,8 +526,12 @@ export default function OnboardingPage() {
               <Check className="w-8 h-8 text-zinc-950" />
             </div>
             <h2 className="text-2xl font-bold text-zinc-100 mb-3">You&apos;re all set! 🎉</h2>
-            <p className="text-zinc-400 mb-8">
+            <p className="text-zinc-400 mb-3">
               Your personalised dashboard is ready. Add your first transaction to get started.
+            </p>
+            <p className="text-zinc-500 text-sm mb-8">
+              To automatically fetch your bank transactions,{' '}
+              <span className="text-emerald-400">connect your Gmail account in Settings.</span>
             </p>
             <button
               onClick={() => router.push('/')}
