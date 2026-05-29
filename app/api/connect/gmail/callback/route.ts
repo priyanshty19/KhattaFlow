@@ -3,13 +3,14 @@ import { NextResponse } from 'next/server'
 import { google } from 'googleapis'
 import { prisma } from '@/lib/prisma'
 import { encryptToken } from '@/lib/utils/encrypt'
+import { getBaseUrl, getGmailRedirectUri } from '@/lib/utils/base-url'
 import { createHmac } from 'crypto'
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const code = searchParams.get('code')
   const state = searchParams.get('state')
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const appUrl = getBaseUrl(req)
 
   if (!code || !state) {
     return NextResponse.redirect(`${appUrl}/settings?error=gmail_auth_failed`)
@@ -50,7 +51,7 @@ export async function GET(req: Request) {
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
-      process.env.GOOGLE_REDIRECT_URI
+      getGmailRedirectUri(req)
     )
 
     console.log('[gmail/callback] step=exchange_code')
