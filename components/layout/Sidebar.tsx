@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, ArrowLeftRight, PieChart, Target,
-  CreditCard, Settings, Plus, Upload, Wallet, Rocket,
+  CreditCard, Settings, Plus, Upload, Wallet, Rocket, Users,
 } from 'lucide-react'
 import { UserButton } from '@clerk/nextjs'
 import { cn } from '@/lib/utils/cn'
@@ -15,6 +15,7 @@ const NAV_ITEMS: { href: string; label: string; icon: React.ComponentType<{ clas
   { href: '/analytics',     label: 'Analytics',    icon: PieChart },
   { href: '/budgets',       label: 'Budget',       icon: Target },
   { href: '/goals',         label: 'Goals',        icon: Rocket },
+  { href: '/split',         label: 'Split & Share', icon: Users },
   { href: '/credit-cards',  label: 'Credit Cards', icon: CreditCard },
 ]
 
