@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useUser } from '@clerk/nextjs'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   X, Mail, CheckCircle2, RefreshCw,
@@ -12,7 +13,8 @@ import { ParsedFinancialEmail } from '@/lib/engines/financial-email-parser'
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
-const DISMISSED_KEY = 'fg_scan_dismissed'
+// Scoped to userId so dismiss doesn't bleed across accounts / re-logins
+const dismissedKey = (userId: string) => `fg_scan_dismissed_${userId}`
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -51,6 +53,7 @@ function getSummary(items: EnrichedEmail[]): ScanSummary {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function GmailOnboardModal() {
+  const { user } = useUser()
   const [state, setState]           = useState<ModalState>('checking')
   const [results, setResults]       = useState<EnrichedEmail[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -59,11 +62,14 @@ export function GmailOnboardModal() {
   const abortRef = useRef<AbortController | null>(null)
 
   // ── Initial check ──────────────────────────────────────────────────────────
+  // Depends on user.id so it re-runs once Clerk resolves the session.
   useEffect(() => {
     if (typeof window === 'undefined') return
+    if (!user?.id) return // Wait for Clerk to resolve
 
-    // If user already dismissed or imported, skip
-    if (localStorage.getItem(DISMISSED_KEY) === '1') {
+    // If this specific user already dismissed or completed import, skip.
+    // Key is scoped to userId so it resets correctly for different accounts.
+    if (localStorage.getItem(dismissedKey(user.id)) === '1') {
       setState('hidden')
       return
     }
@@ -84,7 +90,7 @@ export function GmailOnboardModal() {
       })
       .catch(() => setState('hidden'))
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [user?.id])
 
   // Auto-dismiss after "done" state
   useEffect(() => {
@@ -159,7 +165,7 @@ export function GmailOnboardModal() {
   // ── Actions ───────────────────────────────────────────────────────────────
   function dismiss() {
     abortRef.current?.abort()
-    localStorage.setItem(DISMISSED_KEY, '1')
+    if (user?.id) localStorage.setItem(dismissedKey(user.id), '1')
     setState('hidden')
   }
 
