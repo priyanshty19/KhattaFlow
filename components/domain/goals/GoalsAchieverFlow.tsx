@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Rocket, Plus, SlidersHorizontal, Check, ArrowRight } from 'lucide-react'
 import {
@@ -34,7 +34,16 @@ export function GoalsAchieverFlow() {
   const hasGoals = (goals?.length ?? 0) > 0
   const loading = goalsLoading || allocLoading
 
-  if (loading) {
+  // Decide wizard vs dashboard ONCE, after the initial load. Using live `hasGoals`
+  // here is a bug: creating the first goal flips it to true and yanks the user out
+  // of the wizard mid-flow (during the investments step). The wizard exits only via
+  // its explicit "Done" action (onFinish), not because a goal now exists.
+  const [mode, setMode] = useState<'wizard' | 'dashboard' | null>(null)
+  useEffect(() => {
+    if (mode === null && !loading) setMode(hasGoals ? 'dashboard' : 'wizard')
+  }, [mode, loading, hasGoals])
+
+  if (loading || mode === null) {
     return (
       <div className="space-y-3">
         <div className="h-8 w-64 rounded-lg bg-zinc-900 animate-pulse" />
@@ -49,7 +58,7 @@ export function GoalsAchieverFlow() {
   }
 
   // ── First-time wizard ──────────────────────────────────────────────────────
-  if (!hasGoals) {
+  if (mode === 'wizard') {
     return (
       <Wizard
         step={wizardStep}
@@ -66,6 +75,7 @@ export function GoalsAchieverFlow() {
         planLoading={planLoading}
         onSkipToResults={() => setWizardStep(2)}
         onAddAnother={() => setWizardStep(0)}
+        onFinish={() => setMode('dashboard')}
       />
     )
   }
@@ -183,6 +193,7 @@ function Wizard({
   planLoading,
   onSkipToResults,
   onAddAnother,
+  onFinish,
 }: {
   step: WizardStep
   onAddGoal: (values: CreateGoalInput) => void
@@ -194,6 +205,7 @@ function Wizard({
   planLoading: boolean
   onSkipToResults: () => void
   onAddAnother: () => void
+  onFinish: () => void
 }) {
   return (
     <div className="max-w-3xl">
@@ -274,13 +286,22 @@ function Wizard({
               ) : plan && plan.goals.length ? (
                 <>
                   <GoalPlanResults plan={plan} />
-                  <button
-                    onClick={onAddAnother}
-                    className="mt-5 flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    Add another goal
-                  </button>
+                  <div className="mt-5 flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={onFinish}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold text-sm transition-all active:scale-95"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      Done — go to my goals
+                    </button>
+                    <button
+                      onClick={onAddAnother}
+                      className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Add another goal
+                    </button>
+                  </div>
                 </>
               ) : (
                 <EmptyState
