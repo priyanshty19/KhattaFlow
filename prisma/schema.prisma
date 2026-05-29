@@ -38,6 +38,8 @@ model User {
   userCreditCards             UserCreditCard[]
   cardRecommendationFeedbacks CardRecommendationFeedback[]
   cardApplyIntents            CardApplyIntent[]
+  financialGoals              FinancialGoal[]
+  investmentAllocations       InvestmentAllocation[]
 
   @@map("users")
 }
@@ -346,6 +348,42 @@ model CardApplyIntent {
   @@index([userId])
   @@index([cardId])
   @@map("card_apply_intents")
+}
+
+// ─── Goals Achiever ──────────────────────────────────────────────────────────
+
+model FinancialGoal {
+  id           String   @id @default(uuid())
+  userId       String
+  name         String
+  targetAmount BigInt   // paise (BigInt — goal targets can exceed ₹2.14cr / INT4 max)
+  targetDate   DateTime @db.Date
+  priority     Int      @default(0)
+  status       String   @default("active") // active | achieved | paused
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("financial_goals")
+}
+
+model InvestmentAllocation {
+  id            String   @id @default(uuid())
+  userId        String
+  vehicle       String   // us_stocks|indian_stocks|mutual_funds|crypto|ppf|nps|rd|fd|other
+  monthlyAmount BigInt   // paise/month (BigInt for consistency with corpus/target)
+  currentValue  BigInt   @default(0) // existing corpus, paise (can exceed INT4 max)
+  label         String   @default("") // free text for 'other' (empty string default so unique key is stable)
+  updatedAt     DateTime @updatedAt
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, vehicle, label])
+  @@index([userId])
+  @@map("investment_allocations")
 }
 
 // User's own cards — manually tracked (no utilisation in this version)
