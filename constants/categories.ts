@@ -56,8 +56,14 @@ export function buildDefaultCategories(
   incomeName: string,
   commitments: string[],   // ids from FIXED_COMMITMENT_OPTIONS
   investmentStyle: InvestmentStyle,
+  customCommitments: string[] = [], // free-text "Other" commitments the user typed
 ): CategoryTemplate[] {
-  const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + `-${Date.now()}`
+  // Counter guarantees every slug is unique within a single build — important
+  // because custom "Other" commitments can collide with a preset base name
+  // (e.g. "Shopping"), and Category has a @@unique([userId, slug]) constraint.
+  let slugN = 0
+  const slug = (s: string) =>
+    s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + `-${Date.now()}-${slugN++}`
 
   const incomeLabel = profile === 'freelancer' ? 'Freelance Income'
     : profile === 'student' ? 'Stipend / Pocket Money'
@@ -82,6 +88,28 @@ export function buildDefaultCategories(
         sortOrder: 10 + i,
         group: c.group,
       })),
+
+    // ── Custom "Other" commitments (free-text) ───────────────────────
+    // De-duped (case-insensitive) and skipping anything that matches a preset
+    // so we never create two identical Fixed EMIs categories.
+    ...Array.from(
+      new Map(
+        customCommitments
+          .map(s => s.trim().replace(/\s+/g, ' '))
+          .filter(Boolean)
+          .filter(name => !FIXED_COMMITMENT_OPTIONS.some(o => o.label.toLowerCase() === name.toLowerCase()))
+          .map(name => [name.toLowerCase(), name] as const),
+      ).values(),
+    ).map((name, i) => ({
+      name,
+      slug: slug(name),
+      type: 'expense' as CategoryType,
+      color: '#F59E0B',
+      isFixed: true,
+      isSystem: false,
+      sortOrder: 14, // after presets (10–13), before Subscriptions (15); ties order by name
+      group: 'Fixed EMIs',
+    })),
 
     // ── Subscriptions / Fixed Bills ──────────────────────────────────
     { name: 'Subscriptions', slug: slug('subscriptions'), type: 'expense', color: '#8B5CF6', isFixed: true,  isSystem: false, sortOrder: 15, group: 'Fixed Bills' },

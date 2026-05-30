@@ -56,6 +56,9 @@ export default function OnboardingPage() {
   const [incomeName, setIncomeName] = useState('')
   const [salary, setSalary] = useState('')
   const [commitments, setCommitments] = useState<string[]>([])
+  const [otherActive, setOtherActive] = useState(false)
+  const [otherText, setOtherText] = useState('')
+  const [otherError, setOtherError] = useState<string | null>(null)
   const [savingsGoal, setSavingsGoal] = useState(20)
   const [investmentStyle, setInvestmentStyle] = useState<InvestmentStyle>('balanced')
   const [creditScore, setCreditScore] = useState<number>(700)
@@ -66,9 +69,16 @@ export default function OnboardingPage() {
 
   const stepIndex = STEPS.indexOf(step)
 
+  // Normalised, validated free-text "Other" commitment (empty array when off/blank).
+  const customCommitments = useMemo(() => {
+    if (!otherActive) return []
+    const v = otherText.trim().replace(/\s+/g, ' ')
+    return v ? [v] : []
+  }, [otherActive, otherText])
+
   const categories = useMemo(() =>
-    buildDefaultCategories(profile, incomeName, commitments, investmentStyle),
-    [profile, incomeName, commitments, investmentStyle]
+    buildDefaultCategories(profile, incomeName, commitments, investmentStyle, customCommitments),
+    [profile, incomeName, commitments, investmentStyle, customCommitments]
   )
 
   // Which slugs are currently "active" — all slugs except those whose name is deselected
@@ -91,6 +101,42 @@ export default function OnboardingPage() {
     )
     // Commitment changes add/remove entire category groups — reset deselections
     setDeselectedNames(new Set())
+  }
+
+  const toggleOther = () => {
+    setOtherActive(prev => {
+      const next = !prev
+      if (!next) {
+        setOtherText('')
+        setOtherError(null)
+      }
+      return next
+    })
+    setDeselectedNames(new Set())
+  }
+
+  // Basic validation for the free-text "Other" commitment name.
+  const validateOther = (raw: string): string | null => {
+    const v = raw.trim().replace(/\s+/g, ' ')
+    if (!v) return 'Enter a name for your commitment.'
+    if (v.length < 2) return 'Name is too short (min 2 characters).'
+    if (v.length > 30) return 'Name is too long (max 30 characters).'
+    if (!/^[a-zA-Z0-9 &/().-]+$/.test(v)) return 'Use letters, numbers, spaces and . & / ( ) - only.'
+    if (FIXED_COMMITMENT_OPTIONS.some(o => o.label.toLowerCase() === v.toLowerCase()))
+      return 'That commitment is already in the list above.'
+    return null
+  }
+
+  const continueFromCommitments = () => {
+    if (otherActive) {
+      const err = validateOther(otherText)
+      if (err) {
+        setOtherError(err)
+        return
+      }
+      setOtherError(null)
+    }
+    goTo('goal')
   }
 
   const handleFinish = async () => {
@@ -308,10 +354,55 @@ export default function OnboardingPage() {
                   </button>
                 )
               })}
+
+              {/* Other — free-text custom commitment */}
+              <button
+                onClick={toggleOther}
+                className={cn(
+                  'w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all',
+                  otherActive
+                    ? 'bg-emerald-500/10 border-emerald-500/40 text-zinc-100'
+                    : 'bg-zinc-900 border-zinc-700/50 text-zinc-400 hover:border-zinc-600'
+                )}
+              >
+                <div className={cn('w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-all',
+                  otherActive ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-600'
+                )}>
+                  {otherActive && <Check className="w-2.5 h-2.5 text-zinc-950" />}
+                </div>
+                <span className="text-sm font-medium">Other</span>
+              </button>
+
+              {otherActive && (
+                <div className="px-1 pt-1">
+                  <input
+                    type="text"
+                    autoFocus
+                    value={otherText}
+                    maxLength={30}
+                    placeholder="e.g. Personal Loan, Gym Membership"
+                    onChange={e => {
+                      setOtherText(e.target.value)
+                      if (otherError) setOtherError(null)
+                    }}
+                    onBlur={() => setOtherError(validateOther(otherText))}
+                    className={cn(
+                      'w-full px-4 py-3 bg-zinc-900 border rounded-xl text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none transition-colors',
+                      otherError ? 'border-red-500/50 focus:border-red-500' : 'border-zinc-700/50 focus:border-emerald-500/50'
+                    )}
+                  />
+                  <div className="flex items-center justify-between mt-1.5 px-1">
+                    <span className={cn('text-xs', otherError ? 'text-red-400' : 'text-zinc-600')}>
+                      {otherError ?? 'Added as a fixed expense category.'}
+                    </span>
+                    <span className="text-[10px] text-zinc-600 tabular-nums">{otherText.trim().length}/30</span>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="flex gap-3">
               <button onClick={() => goTo('income')} className="px-5 py-3 border border-zinc-800 text-zinc-400 hover:text-zinc-200 rounded-xl text-sm transition-colors">Back</button>
-              <button onClick={() => goTo('goal')}
+              <button onClick={continueFromCommitments}
                 className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl font-semibold transition-all active:scale-95">
                 Continue <ChevronRight className="w-4 h-4" />
               </button>
