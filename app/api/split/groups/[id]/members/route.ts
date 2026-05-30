@@ -7,6 +7,7 @@ import { getGroupAccess } from '@/lib/utils/split-access'
 import { inviteMemberSchema } from '@/lib/validations/split'
 import { getBaseUrl } from '@/lib/utils/base-url'
 import { sendSplitInviteEmail } from '@/lib/services/email'
+import { rateLimit, rateLimitKey } from '@/lib/utils/rate-limit'
 
 const INVITE_TTL_DAYS = 14
 
@@ -30,6 +31,15 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  // Invite-spam guard (matters once Resend email is live) — cap invites per user.
+  const rl = rateLimit(rateLimitKey(req, 'split-invite', userId), { limit: 15, windowMs: 60_000 })
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: 'Too many invites. Please wait a moment.' },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter ?? 60) } },
+    )
+  }
 
   const access = await getGroupAccess(params.id, userId)
   if (!access) return NextResponse.json({ error: 'Not found' }, { status: 404 })

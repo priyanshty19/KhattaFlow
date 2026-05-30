@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { useUser, UserButton } from '@clerk/nextjs'
-import { Settings, Upload, CreditCard, ChevronRight } from 'lucide-react'
+import { Settings, Upload, CreditCard, ShieldCheck, ChevronRight } from 'lucide-react'
 import { TopBar } from '@/components/layout/TopBar'
 
 // Profile hub — home for the low-frequency utilities that used to crowd the nav.
@@ -16,6 +16,7 @@ const LINKS: {
   { href: '/credit-cards',   label: 'Credit Cards',      description: 'Find your best-fit card', icon: CreditCard },
   { href: '/settings/import', label: 'Sync Transactions', description: 'Import from Gmail & SMS',  icon: Upload },
   { href: '/settings',        label: 'Settings',          description: 'Profile, goals, categories', icon: Settings },
+  { href: '/settings/policy', label: 'Privacy & Terms',   description: 'Policies and your data', icon: ShieldCheck },
 ]
 
 export default function ProfilePage() {

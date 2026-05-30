@@ -20,6 +20,7 @@ import {
 } from '@/lib/engines/goals-engine'
 import { VEHICLES, TARGET_MIX, DEFAULT_STYLE, type Vehicle } from '@/constants/investment-returns'
 import type { InvestmentStyle } from '@/constants/categories'
+import { rateLimit, rateLimitKey } from '@/lib/utils/rate-limit'
 
 export interface GoalRecommendation {
   id: string
@@ -188,9 +189,18 @@ function ruleBasedRecommendations(ctx: {
   return recs.slice(0, 4)
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  // Gemini cost guard — cap AI recommendation calls per user.
+  const rl = rateLimit(rateLimitKey(req, 'goal-recs', userId), { limit: 20, windowMs: 60_000 })
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please wait a moment.' },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter ?? 60) } },
+    )
+  }
 
   const [user, goals, allocationRows] = await Promise.all([
     prisma.user.findUnique({ where: { id: userId }, select: { investmentStyle: true } }),

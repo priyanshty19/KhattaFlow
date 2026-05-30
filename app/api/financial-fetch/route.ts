@@ -9,6 +9,7 @@ import { FinancialEmailParser, ParsedFinancialEmail } from '@/lib/engines/financ
 import { suggestCategorySlug } from '@/lib/engines/merchant-category-rules'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { gmail_v1 } from 'googleapis'
+import { rateLimit, rateLimitKey } from '@/lib/utils/rate-limit'
 
 // ── SSE helpers ───────────────────────────────────────────────────────────────
 
@@ -74,6 +75,15 @@ export async function POST(req: Request) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
+  // Gemini + Gmail cost guard — this is an expensive scan; cap per user.
+  const rl = rateLimit(rateLimitKey(req, 'financial-fetch', userId), { limit: 6, windowMs: 60_000 })
+  if (!rl.ok) {
+    return new Response(JSON.stringify({ error: 'Too many sync requests. Please wait a moment.' }), {
+      status: 429,
+      headers: { 'Content-Type': 'application/json', 'Retry-After': String(rl.retryAfter ?? 60) },
     })
   }
 

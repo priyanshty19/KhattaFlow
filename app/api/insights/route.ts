@@ -8,6 +8,7 @@ import { TransactionEngine } from '@/lib/engines/transaction-engine'
 import { BudgetEngine } from '@/lib/engines/budget-engine'
 import { getPreviousMonth } from '@/lib/utils/date'
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import { rateLimit, rateLimitKey } from '@/lib/utils/rate-limit'
 
 const toRs = (paise: number) => (paise / 100).toLocaleString('en-IN', { maximumFractionDigits: 0 })
 
@@ -90,6 +91,15 @@ RULES:
 export async function GET(req: Request) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  // Gemini cost guard — cap AI insight calls per user.
+  const rl = rateLimit(rateLimitKey(req, 'insights', userId), { limit: 20, windowMs: 60_000 })
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please wait a moment.' },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter ?? 60) } },
+    )
+  }
 
   const { searchParams } = new URL(req.url)
   const month = searchParams.get('month')
