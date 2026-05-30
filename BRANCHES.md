@@ -4,6 +4,7 @@ Full history of every branch created, updated, and merged in this repo.
 
 | Date | Branch | Event | Actor | PR | Notes |
 |------|--------|-------|-------|----|-------|
+| 2026-05-30 | `feat/dashboard-budget-polish` | 🚀 Merged | @priyanshty19 | [#29](https://github.com/priyanshty19/fingrid/pull/29) | [FEAT] Feat/Dashboard Budget Polish |
 | 2026-05-30 | `feat/dashboard-budget-polish` | 📤 Pushed | @priyanshty19 | — | — |
 | 2026-05-30 | `feat/dashboard-budget-polish` | ✅ Created | @priyanshty19 | — | — |
 | 2026-05-30 | `feat/topbar-align` | 🚀 Merged | @priyanshty19 | [#28](https://github.com/priyanshty19/fingrid/pull/28) | [FEAT] Feat/Topbar Align |
