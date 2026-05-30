@@ -71,7 +71,7 @@ export default function GroupDetailPage() {
               <div className="lg:col-span-2">
                 <BusinessDashboard group={group} />
               </div>
-              <MemberList groupId={groupId} members={group.members} onInvite={() => setInviteOpen(true)} />
+              <MemberList groupId={groupId} members={group.members} onInvite={() => setInviteOpen(true)} canManage={group.myRole === 'owner'} />
             </div>
             <ActivityFeed groupId={groupId} groupType="business" expenses={group.expenses} members={group.members} myMemberId={group.myMemberId} />
           </div>
@@ -83,7 +83,7 @@ export default function GroupDetailPage() {
             </div>
             <div className="space-y-4">
               <BalanceSummary balances={group.balances} members={group.members} myMemberId={group.myMemberId} suggestions={group.suggestions} />
-              <MemberList groupId={groupId} members={group.members} onInvite={() => setInviteOpen(true)} />
+              <MemberList groupId={groupId} members={group.members} onInvite={() => setInviteOpen(true)} canManage={group.myRole === 'owner'} />
             </div>
           </div>
         )}

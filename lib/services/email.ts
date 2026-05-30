@@ -1,17 +1,23 @@
-/** Invite someone to a Split & Share group. Dev fallback logs the link to console. */
+/**
+ * Invite someone to a Split & Share group.
+ * Returns `true` only if an email was actually dispatched via Resend. When
+ * `RESEND_API_KEY` is not configured we skip sending (dev/no-mail setups) and
+ * return `false` so callers can be honest with the UI instead of claiming a
+ * mail went out. Throws if Resend is configured but the send fails.
+ */
 export async function sendSplitInviteEmail(params: {
   to: string
   groupName: string
   inviterName: string
   inviteUrl: string
-}): Promise<void> {
+}): Promise<boolean> {
   const { to, groupName, inviterName, inviteUrl } = params
   const apiKey = process.env.RESEND_API_KEY
   const from = process.env.RESEND_FROM ?? 'noreply@fingrid.in'
 
   if (!apiKey) {
     console.log(`[DEV] Split invite for ${to} → ${inviteUrl}`)
-    return
+    return false
   }
 
   const res = await fetch('https://api.resend.com/emails', {
@@ -46,6 +52,8 @@ export async function sendSplitInviteEmail(params: {
     const body = await res.text()
     throw new Error(`Resend error ${res.status}: ${body}`)
   }
+
+  return true
 }
 
 export async function sendOtpEmail(to: string, otp: string): Promise<void> {

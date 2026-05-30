@@ -228,11 +228,11 @@ export function useInviteMember(groupId: string) {
   return useMutation({
     mutationFn: (data: InviteMemberInput) =>
       fetch(`/api/split/groups/${groupId}/members`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(
-        (r) => json<{ memberId: string; inviteUrl: string }>(r),
+        (r) => json<{ memberId: string; inviteUrl: string; emailSent: boolean }>(r),
       ),
-    onSuccess: () => {
+    onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: splitKeys.group(groupId) })
-      toast.success('Invite sent')
+      toast.success(res.emailSent ? 'Invite email sent' : 'Member added — share the invite link')
     },
     onError: () => toast.error('Failed to invite'),
   })

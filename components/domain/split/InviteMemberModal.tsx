@@ -9,6 +9,7 @@ export function InviteMemberModal({ groupId, open, onClose }: { groupId: string;
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
   const [inviteUrl, setInviteUrl] = useState<string | null>(null)
+  const [emailSent, setEmailSent] = useState(false)
   const [copied, setCopied] = useState(false)
 
   const submit = () => {
@@ -18,6 +19,7 @@ export function InviteMemberModal({ groupId, open, onClose }: { groupId: string;
       {
         onSuccess: (res) => {
           setInviteUrl(res.inviteUrl)
+          setEmailSent(res.emailSent)
           setEmail('')
           setName('')
         },
@@ -34,6 +36,7 @@ export function InviteMemberModal({ groupId, open, onClose }: { groupId: string;
 
   const close = () => {
     setInviteUrl(null)
+    setEmailSent(false)
     onClose()
   }
 
@@ -72,7 +75,11 @@ export function InviteMemberModal({ groupId, open, onClose }: { groupId: string;
 
         {inviteUrl && (
           <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.05] p-3">
-            <p className="text-xs text-zinc-400 mb-2">Invite sent. Share this link too:</p>
+            <p className="text-xs text-zinc-400 mb-2">
+              {emailSent
+                ? 'Invite email sent. You can also share this link directly:'
+                : "We couldn't email them — share this invite link directly:"}
+            </p>
             <div className="flex items-center gap-2">
               <input
                 readOnly

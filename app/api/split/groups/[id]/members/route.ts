@@ -69,12 +69,13 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
   const inviteUrl = `${getBaseUrl(req)}/split/invite/${invite.token}`
   const inviterName = access.member.name || 'A FinGrid user'
+  let emailSent = false
   try {
-    await sendSplitInviteEmail({ to: email, groupName: group.name, inviterName, inviteUrl })
+    emailSent = await sendSplitInviteEmail({ to: email, groupName: group.name, inviterName, inviteUrl })
   } catch (err) {
     // Email is best-effort; surface the link regardless so the inviter can share it.
     console.error('[split] invite email failed:', err)
   }
 
-  return NextResponse.json({ memberId: member.id, inviteUrl }, { status: 201 })
+  return NextResponse.json({ memberId: member.id, inviteUrl, emailSent }, { status: 201 })
 }
