@@ -4,6 +4,7 @@ Full history of every branch created, updated, and merged in this repo.
 
 | Date | Branch | Event | Actor | PR | Notes |
 |------|--------|-------|-------|----|-------|
+| 2026-05-30 | `fix/categories-seed-keying` | 📤 Pushed | @priyanshty19 | — | — |
 | 2026-05-30 | `feat/split-share` | 🚀 Merged | @priyanshty19 | [#24](https://github.com/priyanshty19/fingrid/pull/24) | Split & Share — collaborative expense splitting, business cycles & notifications |
 | 2026-05-30 | `feat/split-share` | ✅ Created | @priyanshty19 | — | — |
 | 2026-05-30 | `feat/split-share` | 📤 Pushed | @priyanshty19 | — | — |
