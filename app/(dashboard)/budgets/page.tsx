@@ -4,6 +4,7 @@ import { LayoutList, CalendarRange } from 'lucide-react'
 import { BudgetTabs } from '@/components/domain/budgets/BudgetTabs'
 import { BudgetPlanner } from '@/components/domain/budgets/BudgetPlanner'
 import { TopBar } from '@/components/layout/TopBar'
+import { MoneyTabs } from '@/components/layout/MoneyTabs'
 import { getCurrentMonth } from '@/lib/utils/date'
 import { cn } from '@/lib/utils/cn'
 
@@ -50,7 +51,10 @@ export default function BudgetsPage() {
         onMonthChange={view === 'monthly' ? setMonth : undefined}
         actions={toggle}
       />
-      <div className="px-4 md:px-6 lg:px-8 py-4 md:py-6 max-w-[1200px]">
+      <div className="px-4 md:px-6 lg:px-8 py-4 md:py-6 max-w-[1200px] mx-auto w-full">
+        <div className="md:hidden mb-4">
+          <MoneyTabs />
+        </div>
         <div className="mb-4 md:mb-6">
           <h2 className="text-lg md:text-xl font-semibold text-zinc-100">Budget</h2>
           <p className="text-sm text-zinc-400 mt-0.5">

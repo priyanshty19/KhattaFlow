@@ -11,10 +11,17 @@ interface TopBarProps {
   month?: string
   onMonthChange?: (month: string) => void
   actions?: React.ReactNode
+  /**
+   * Show the mobile Add-Transaction quick-add FAB. Defaults to true (right for the
+   * Money/Dashboard surfaces). Set false on sections whose primary action isn't
+   * "add transaction" (Split, Goals, Profile) so they expose their own in-page action
+   * instead of a misleading global "+".
+   */
+  showQuickAdd?: boolean
   className?: string
 }
 
-export function TopBar({ title, month, onMonthChange, actions, className }: TopBarProps) {
+export function TopBar({ title, month, onMonthChange, actions, showQuickAdd = true, className }: TopBarProps) {
   const { openQuickAdd } = useUIStore()
   return (
     <header className={cn(
@@ -41,14 +48,16 @@ export function TopBar({ title, month, onMonthChange, actions, className }: TopB
       {/* Right: actions + quick-add (mobile) + bell + user */}
       <div className="flex items-center gap-2 md:gap-3">
         {actions}
-        {/* Quick-add FAB — mobile only */}
-        <button
-          onClick={() => openQuickAdd()}
-          className="md:hidden flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-zinc-950 transition-colors active:scale-95"
-          aria-label="Add transaction"
-        >
-          <Plus className="w-4 h-4" />
-        </button>
+        {/* Quick-add FAB — mobile only, contextual */}
+        {showQuickAdd && (
+          <button
+            onClick={() => openQuickAdd()}
+            className="md:hidden flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-zinc-950 transition-colors active:scale-95"
+            aria-label="Add transaction"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        )}
         <NotificationCenter />
         <UserButton />
       </div>
