@@ -35,7 +35,21 @@ const csp = [
   // Without challenges.cloudflare.com in worker-src the worker is killed silently
   // and the CAPTCHA token is never generated — causing the desktop form to hang.
   "worker-src 'self' blob: https://challenges.cloudflare.com",
+  // Clickjacking: FinGrid is never legitimately embedded in another site's frame.
+  "frame-ancestors 'none'",
 ].join('; ')
+
+// ── Baseline security headers (applied to every route alongside the CSP) ─────
+// All are response-tightening only and don't affect Clerk/Turnstile, which load
+// in CHILD frames (frame-src) rather than framing us. HSTS is ignored by browsers
+// over http://localhost, so it's safe in development too.
+const securityHeaders = [
+  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+  { key: 'X-Frame-Options', value: 'DENY' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()' },
+]
 
 const nextConfig = {
   experimental: {
@@ -55,6 +69,7 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: csp,
           },
+          ...securityHeaders,
         ],
       },
     ]

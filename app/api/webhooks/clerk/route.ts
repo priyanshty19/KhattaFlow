@@ -53,5 +53,16 @@ export async function POST(req: Request) {
     }
   }
 
+  // GDPR right to erasure: when a user deletes their Clerk account, remove the DB
+  // row so the onDelete: Cascade relations purge all owned data (transactions,
+  // budgets, goals, split memberships, notifications, etc.). Idempotent — a missing
+  // row is a harmless no-op.
+  if (evt.type === 'user.deleted') {
+    const id = evt.data.id
+    if (id) {
+      await prisma.user.deleteMany({ where: { id } })
+    }
+  }
+
   return NextResponse.json({ received: true })
 }

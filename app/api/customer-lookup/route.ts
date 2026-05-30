@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { generateOtp, hashOtp } from '@/lib/utils/otp'
 import { sendOtpEmail } from '@/lib/services/email'
 import { sendOtpSms } from '@/lib/services/sms'
+import { rateLimit, rateLimitKey } from '@/lib/utils/rate-limit'
 
 function validateApiKey(req: Request): boolean {
   const key = req.headers.get('x-api-key')
@@ -13,6 +14,16 @@ function validateApiKey(req: Request): boolean {
 export async function GET(req: Request) {
   if (!validateApiKey(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // Front-line IP guard against enumeration/DB-hammering bursts. Complements the
+  // existing per-identifier DB limit below (which survives cold starts).
+  const rl = rateLimit(rateLimitKey(req, 'otp-send'), { limit: 20, windowMs: 60_000 })
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: 'Too many requests. Slow down.' },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter ?? 60) } },
+    )
   }
 
   const { searchParams } = new URL(req.url)
