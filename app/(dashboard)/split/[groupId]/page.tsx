@@ -25,7 +25,7 @@ export default function GroupDetailPage() {
   if (isLoading || !group) {
     return (
       <>
-        <TopBar title="Group" showQuickAdd={false} />
+        <TopBar title="Group" showQuickAdd={false} maxWidth="max-w-[1100px]" />
         <div className="px-4 md:px-6 lg:px-8 py-6 max-w-[1100px] mx-auto w-full space-y-3">
           <div className="h-24 rounded-2xl bg-zinc-900/60 border border-zinc-800/50 animate-pulse" />
           <div className="h-48 rounded-2xl bg-zinc-900/60 border border-zinc-800/50 animate-pulse" />
@@ -47,6 +47,7 @@ export default function GroupDetailPage() {
             <Plus className="w-4 h-4" /> Add expense
           </button>
         }
+        maxWidth="max-w-[1100px]"
       />
       <div className="px-4 md:px-6 lg:px-8 py-4 md:py-6 max-w-[1100px] mx-auto w-full">
         <div className="flex items-center justify-between mb-4">

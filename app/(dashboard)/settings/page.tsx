@@ -75,7 +75,7 @@ export default function SettingsPage() {
 
   return (
     <>
-      <TopBar title="Settings" />
+      <TopBar title="Settings" maxWidth="max-w-2xl" />
       <div className="flex flex-col gap-4 md:gap-6 px-4 md:px-6 lg:px-8 py-4 md:py-6 max-w-2xl mx-auto w-full">
         <div>
           <h2 className="text-xl font-semibold text-zinc-100">Settings</h2>
