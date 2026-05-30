@@ -84,6 +84,12 @@ export function GmailOnboardModal() {
           setState('hidden')
           return
         }
+        // Onboarding scan is a ONE-SHOT. Mark it done up front so it never
+        // auto-fires again on this device — even if the scan finds nothing,
+        // errors, or the user navigates away mid-scan. Any future sync is a
+        // manual rescan from the Fetch section (/settings/import). This is the
+        // fix for the modal popping up "at random times" after onboarding.
+        if (user.id) localStorage.setItem(dismissedKey(user.id), '1')
         setCategories(Array.isArray(cats) ? cats : [])
         setState('scanning')
         startScan()
