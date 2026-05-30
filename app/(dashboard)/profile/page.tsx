@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { useUser, UserButton, useClerk } from '@clerk/nextjs'
-import { Settings, Upload, CreditCard, ShieldCheck, ChevronRight } from 'lucide-react'
+import { Settings, Upload, CreditCard, ShieldCheck, ChevronRight, LogOut } from 'lucide-react'
 import { TopBar } from '@/components/layout/TopBar'
 
 // Profile hub — home for the low-frequency utilities that used to crowd the nav.
@@ -21,7 +21,7 @@ const LINKS: {
 
 export default function ProfilePage() {
   const { user } = useUser()
-  const { openUserProfile } = useClerk()
+  const { openUserProfile, signOut } = useClerk()
 
   return (
     <>
@@ -68,6 +68,18 @@ export default function ProfilePage() {
             </Link>
           ))}
         </div>
+
+        {/* Sign out — explicit, discoverable logout (the Clerk account modal has none). */}
+        <button
+          type="button"
+          onClick={() => signOut()}
+          className="w-full bg-zinc-900 border border-zinc-600/40 rounded-xl flex items-center gap-3 px-5 py-4 hover:bg-red-500/10 hover:border-red-500/30 transition-colors group"
+        >
+          <div className="w-9 h-9 rounded-lg bg-zinc-800 group-hover:bg-red-500/15 flex items-center justify-center shrink-0 transition-colors">
+            <LogOut className="w-4 h-4 text-zinc-400 group-hover:text-red-400 transition-colors" />
+          </div>
+          <span className="text-sm font-medium text-zinc-200 group-hover:text-red-300 transition-colors">Sign out</span>
+        </button>
       </div>
     </>
   )
