@@ -1,15 +1,22 @@
 'use client'
 import { useState } from 'react'
-import { UserPlus, Crown, Clock, Link2, Check } from 'lucide-react'
+import { UserPlus, Crown, Clock, Link2, Check, X } from 'lucide-react'
 import type { SplitMemberDTO } from '@/lib/queries/split'
-import { useMemberInviteLink, useGroupInviteLink } from '@/lib/queries/split'
+import { useMemberInviteLink, useGroupInviteLink, useRemoveMember } from '@/lib/queries/split'
 import { cn } from '@/lib/utils/cn'
 
-export function MemberList({ groupId, members, onInvite }: { groupId: string; members: SplitMemberDTO[]; onInvite: () => void }) {
+export function MemberList({ groupId, members, onInvite, canManage = false }: { groupId: string; members: SplitMemberDTO[]; onInvite: () => void; canManage?: boolean }) {
   const inviteLink = useMemberInviteLink(groupId)
   const groupLink = useGroupInviteLink(groupId)
+  const removeMember = useRemoveMember(groupId)
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [copiedGroup, setCopiedGroup] = useState(false)
+
+  const remove = (m: SplitMemberDTO) => {
+    if (window.confirm(`Remove ${m.name} from this group?`)) {
+      removeMember.mutate(m.id)
+    }
+  }
 
   const copyLink = (memberId: string) => {
     inviteLink.mutate(memberId, {
@@ -87,6 +94,17 @@ export function MemberList({ groupId, members, onInvite }: { groupId: string; me
                   </button>
                 )}
               </>
+            )}
+            {canManage && m.role !== 'owner' && (
+              <button
+                onClick={() => remove(m)}
+                disabled={removeMember.isPending}
+                title={`Remove ${m.name}`}
+                aria-label={`Remove ${m.name}`}
+                className="inline-flex items-center justify-center w-6 h-6 rounded-full text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50 shrink-0"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             )}
           </div>
         ))}
