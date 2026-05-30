@@ -4,6 +4,7 @@ Full history of every branch created, updated, and merged in this repo.
 
 | Date | Branch | Event | Actor | PR | Notes |
 |------|--------|-------|-------|----|-------|
+| 2026-05-30 | `feat/gmail-manual-connect` | ✅ Created | @priyanshty19 | — | — |
 | 2026-05-30 | `feat/launch-hardening` | 🚀 Merged | @priyanshty19 | [#35](https://github.com/priyanshty19/fingrid/pull/35) | [FEAT] Feat/Launch Hardening |
 | 2026-05-30 | `feat/launch-hardening` | 📤 Pushed | @priyanshty19 | — | — |
 | 2026-05-30 | `feat/launch-hardening` | 🚀 Merged | @priyanshty19 | [#34](https://github.com/priyanshty19/fingrid/pull/34) | [FEAT] Feat/Launch Hardening |
