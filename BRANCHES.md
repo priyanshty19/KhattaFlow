@@ -4,6 +4,7 @@ Full history of every branch created, updated, and merged in this repo.
 
 | Date | Branch | Event | Actor | PR | Notes |
 |------|--------|-------|-------|----|-------|
+| 2026-05-30 | `feat/topbar-align` | ✅ Created | @priyanshty19 | — | — |
 | 2026-05-30 | `feat/command-center-dashboard` | 🚀 Merged | @priyanshty19 | [#27](https://github.com/priyanshty19/fingrid/pull/27) | [FEAT] Feat/Command Center Dashboard |
 | 2026-05-30 | `feat/command-center-dashboard` | ✅ Created | @priyanshty19 | — | — |
 | 2026-05-30 | `feat/nav-dashboard-redesign` | 🚀 Merged | @priyanshty19 | [#26](https://github.com/priyanshty19/fingrid/pull/26) | [FEAT] Feat/Nav Dashboard Redesign |
