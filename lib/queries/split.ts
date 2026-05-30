@@ -7,6 +7,8 @@ import type {
   CreateSettlementInput,
   CreateCycleInput,
   UpsertContributionInput,
+  CreateInventoryItemInput,
+  UpdateInventoryItemInput,
 } from '@/lib/validations/split'
 
 export const splitKeys = {
@@ -14,6 +16,7 @@ export const splitKeys = {
   groups: () => [...splitKeys.all, 'groups'] as const,
   group: (id: string) => [...splitKeys.all, 'group', id] as const,
   cycles: (id: string) => [...splitKeys.all, 'group', id, 'cycles'] as const,
+  inventory: (id: string) => [...splitKeys.all, 'group', id, 'inventory'] as const,
 }
 
 async function json<T>(res: Response): Promise<T> {
@@ -119,6 +122,17 @@ export interface CycleDTO {
   }[]
 }
 
+export interface InventoryItemDTO {
+  id: string
+  name: string
+  quantity: number
+  unitCost: number
+  category: string | null
+  notes: string | null
+  cycleId: string | null
+  createdAt: string
+}
+
 // ── Groups ───────────────────────────────────────────────────────────────────
 
 export function useSplitGroups() {
@@ -179,6 +193,17 @@ export function useInviteMember(groupId: string) {
       toast.success('Invite sent')
     },
     onError: () => toast.error('Failed to invite'),
+  })
+}
+
+// Fetch a shareable invite link for a pending member on demand (e.g. to copy it).
+export function useMemberInviteLink(groupId: string) {
+  return useMutation({
+    mutationFn: (memberId: string) =>
+      fetch(`/api/split/groups/${groupId}/members/${memberId}/invite-link`).then((r) =>
+        json<{ inviteUrl: string }>(r),
+      ),
+    onError: () => toast.error('Could not get invite link'),
   })
 }
 
@@ -302,5 +327,55 @@ export function useUpsertContribution(groupId: string) {
       toast.success('Contribution updated')
     },
     onError: () => toast.error('Failed to update contribution'),
+  })
+}
+
+// ── Business inventory ──────────────────────────────────────────────────────────
+
+export function useInventory(groupId: string) {
+  return useQuery({
+    queryKey: splitKeys.inventory(groupId),
+    queryFn: () => fetch(`/api/split/groups/${groupId}/inventory`).then((r) => json<{ items: InventoryItemDTO[] }>(r)),
+    enabled: !!groupId,
+    staleTime: 1000 * 30,
+  })
+}
+
+export function useAddInventoryItem(groupId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: CreateInventoryItemInput) =>
+      fetch(`/api/split/groups/${groupId}/inventory`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(json),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: splitKeys.inventory(groupId) })
+      toast.success('Item added')
+    },
+    onError: () => toast.error('Failed to add item'),
+  })
+}
+
+export function useUpdateInventoryItem(groupId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ itemId, data }: { itemId: string; data: UpdateInventoryItemInput }) =>
+      fetch(`/api/split/groups/${groupId}/inventory/${itemId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(json),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: splitKeys.inventory(groupId) })
+      toast.success('Item updated')
+    },
+    onError: () => toast.error('Failed to update item'),
+  })
+}
+
+export function useDeleteInventoryItem(groupId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (itemId: string) =>
+      fetch(`/api/split/groups/${groupId}/inventory/${itemId}`, { method: 'DELETE' }).then(json),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: splitKeys.inventory(groupId) })
+      toast.success('Item deleted')
+    },
+    onError: () => toast.error('Failed to delete item'),
   })
 }

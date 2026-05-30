@@ -76,19 +76,19 @@ export default function GroupDetailPage() {
               <div className="lg:col-span-2">
                 <BusinessDashboard group={group} />
               </div>
-              <MemberList members={group.members} onInvite={() => setInviteOpen(true)} />
+              <MemberList groupId={groupId} members={group.members} onInvite={() => setInviteOpen(true)} />
             </div>
-            <ActivityFeed groupId={groupId} groupType="business" expenses={group.expenses} members={group.members} />
+            <ActivityFeed groupId={groupId} groupType="business" expenses={group.expenses} members={group.members} myMemberId={group.myMemberId} />
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2 space-y-4">
               <SettlementSuggestions groupId={groupId} suggestions={group.suggestions} members={group.members} />
-              <ActivityFeed groupId={groupId} groupType="personal" expenses={group.expenses} members={group.members} />
+              <ActivityFeed groupId={groupId} groupType="personal" expenses={group.expenses} members={group.members} myMemberId={group.myMemberId} />
             </div>
             <div className="space-y-4">
               <BalanceSummary balances={group.balances} members={group.members} myMemberId={group.myMemberId} />
-              <MemberList members={group.members} onInvite={() => setInviteOpen(true)} />
+              <MemberList groupId={groupId} members={group.members} onInvite={() => setInviteOpen(true)} />
             </div>
           </div>
         )}

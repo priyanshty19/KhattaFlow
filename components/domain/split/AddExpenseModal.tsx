@@ -1,9 +1,9 @@
 'use client'
 import { useMemo, useState } from 'react'
 import { SplitModal } from './SplitModal'
-import { useAddExpense, type SplitMemberDTO } from '@/lib/queries/split'
+import { useAddExpense, useUpdateExpense, type SplitExpenseDTO, type SplitMemberDTO } from '@/lib/queries/split'
 import { computeShares, type SplitType } from '@/lib/engines/split-engine'
-import { toPaise } from '@/lib/utils/currency'
+import { toPaise, toRupees } from '@/lib/utils/currency'
 import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay'
 import { categoriesFor, categoryOrderFor, type SplitGroupType } from '@/constants/split-categories'
 import { todayISO } from '@/lib/utils/date'
@@ -22,21 +22,44 @@ interface Props {
   members: SplitMemberDTO[]
   myMemberId: string
   cycleId?: string
+  /** When provided, the modal edits this expense instead of creating a new one. */
+  expense?: SplitExpenseDTO | null
   open: boolean
   onClose: () => void
 }
 
-export function AddExpenseModal({ groupId, groupType, members, myMemberId, cycleId, open, onClose }: Props) {
+export function AddExpenseModal({ groupId, groupType, members, myMemberId, cycleId, expense, open, onClose }: Props) {
   const add = useAddExpense(groupId)
+  const update = useUpdateExpense(groupId)
+  const isEdit = !!expense
   const active = members.filter((m) => m.status === 'active' || m.userId)
-  const [description, setDescription] = useState('')
-  const [amountStr, setAmountStr] = useState('')
-  const [paidById, setPaidById] = useState(myMemberId)
-  const [splitType, setSplitType] = useState<SplitType>('equal')
-  const [participants, setParticipants] = useState<string[]>(active.map((m) => m.id))
-  const [inputs, setInputs] = useState<Record<string, string>>({})
-  const [category, setCategory] = useState<string>('')
-  const [date, setDate] = useState(todayISO())
+
+  // Derive per-member input strings from an existing expense's shares so edit
+  // mode pre-fills the right values for the saved split type.
+  const initialInputs = (): Record<string, string> => {
+    if (!expense) return {}
+    const out: Record<string, string> = {}
+    if (expense.splitType === 'exact') {
+      for (const s of expense.shares) out[s.memberId] = String(toRupees(s.amount))
+    } else if (expense.splitType === 'percentage') {
+      for (const s of expense.shares) out[s.memberId] = String(Math.round((s.amount / expense.amount) * 100))
+    } else if (expense.splitType === 'shares') {
+      // Reconstruct integer weights proportional to share amounts.
+      for (const s of expense.shares) out[s.memberId] = String(s.amount)
+    }
+    return out
+  }
+
+  const [description, setDescription] = useState(expense?.description ?? '')
+  const [amountStr, setAmountStr] = useState(expense ? String(toRupees(expense.amount)) : '')
+  const [paidById, setPaidById] = useState(expense?.paidById ?? myMemberId)
+  const [splitType, setSplitType] = useState<SplitType>(expense?.splitType ?? 'equal')
+  const [participants, setParticipants] = useState<string[]>(
+    expense ? expense.shares.map((s) => s.memberId) : active.map((m) => m.id),
+  )
+  const [inputs, setInputs] = useState<Record<string, string>>(initialInputs)
+  const [category, setCategory] = useState<string>(expense?.category ?? '')
+  const [date, setDate] = useState(expense?.date ?? todayISO())
 
   const amountPaise = amountStr ? toPaise(amountStr) : 0
   const catMeta = categoriesFor(groupType)
@@ -76,7 +99,8 @@ export function AddExpenseModal({ groupId, groupType, members, myMemberId, cycle
     return { preview, valid, hint }
   }, [amountPaise, participants, inputs, splitType, paidById])
 
-  const canSubmit = !!description.trim() && amountPaise > 0 && participants.length > 0 && valid && !add.isPending
+  const pending = add.isPending || update.isPending
+  const canSubmit = !!description.trim() && amountPaise > 0 && participants.length > 0 && valid && !pending
 
   const submit = () => {
     if (!canSubmit) return
@@ -88,32 +112,32 @@ export function AddExpenseModal({ groupId, groupType, members, myMemberId, cycle
             const value = splitType === 'exact' ? (raw ? toPaise(raw) : 0) : raw ? parseFloat(raw) : 0
             return { memberId, value }
           })
-    add.mutate(
-      {
-        description: description.trim(),
-        amount: amountPaise,
-        paidById,
-        splitType,
-        participants,
-        inputs: payloadInputs,
-        category: category || undefined,
-        date,
-        cycleId,
-      },
-      {
-        onSuccess: () => {
-          onClose()
-          setDescription('')
-          setAmountStr('')
-          setInputs({})
-          setSplitType('equal')
-        },
-      },
-    )
+    const data = {
+      description: description.trim(),
+      amount: amountPaise,
+      paidById,
+      splitType,
+      participants,
+      inputs: payloadInputs,
+      category: category || undefined,
+      date,
+      cycleId: expense?.cycleId ?? cycleId,
+    }
+    const onSuccess = () => {
+      onClose()
+      if (!isEdit) {
+        setDescription('')
+        setAmountStr('')
+        setInputs({})
+        setSplitType('equal')
+      }
+    }
+    if (isEdit) update.mutate({ expenseId: expense!.id, data }, { onSuccess })
+    else add.mutate(data, { onSuccess })
   }
 
   return (
-    <SplitModal open={open} title="Add expense" onClose={onClose}>
+    <SplitModal open={open} title={isEdit ? 'Edit expense' : 'Add expense'} onClose={onClose}>
       <div className="space-y-4">
         <div>
           <label className="block text-xs font-medium text-zinc-400 mb-1.5">Description</label>
@@ -236,7 +260,7 @@ export function AddExpenseModal({ groupId, groupType, members, myMemberId, cycle
           disabled={!canSubmit}
           className="w-full h-11 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-zinc-950 font-semibold transition-colors"
         >
-          {add.isPending ? 'Adding…' : 'Add expense'}
+          {pending ? 'Saving…' : isEdit ? 'Save changes' : 'Add expense'}
         </button>
       </div>
     </SplitModal>

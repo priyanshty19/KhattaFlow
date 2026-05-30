@@ -93,6 +93,19 @@ export const upsertContributionSchema = z.object({
   paidAmount: z.number().int().min(0).optional(),
 })
 
+// ── Business: inventory ─────────────────────────────────────────────────────────
+
+export const createInventoryItemSchema = z.object({
+  name: z.string().min(1).max(120),
+  quantity: z.number().int().min(0),
+  unitCost: z.number().int().min(0), // paise per unit
+  category: z.string().max(40).optional(),
+  notes: z.string().max(500).optional(),
+  cycleId: z.string().optional(),
+})
+
+export const updateInventoryItemSchema = createInventoryItemSchema.partial()
+
 export type CreateGroupInput = z.infer<typeof createGroupSchema>
 export type UpdateGroupInput = z.infer<typeof updateGroupSchema>
 export type InviteMemberInput = z.infer<typeof inviteMemberSchema>
@@ -104,3 +117,5 @@ export type UpdateSettlementInput = z.infer<typeof updateSettlementSchema>
 export type CreateCycleInput = z.infer<typeof createCycleSchema>
 export type UpdateCycleInput = z.infer<typeof updateCycleSchema>
 export type UpsertContributionInput = z.infer<typeof upsertContributionSchema>
+export type CreateInventoryItemInput = z.infer<typeof createInventoryItemSchema>
+export type UpdateInventoryItemInput = z.infer<typeof updateInventoryItemSchema>

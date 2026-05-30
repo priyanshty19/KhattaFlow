@@ -425,6 +425,7 @@ model SplitGroup {
   settlements SplitSettlement[]
   cycles      SplitBudgetCycle[]
   invites     SplitInvite[]
+  inventory   SplitInventoryItem[]
 
   @@index([createdById])
   @@map("split_groups")
@@ -533,12 +534,34 @@ model SplitBudgetCycle {
   status      String   @default("active") // draft | active | completed
   createdAt   DateTime @default(now())
 
-  group         SplitGroup          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  group         SplitGroup           @relation(fields: [groupId], references: [id], onDelete: Cascade)
   expenses      SplitExpense[]
   contributions SplitContribution[]
+  inventory     SplitInventoryItem[]
 
   @@index([groupId])
   @@map("split_budget_cycles")
+}
+
+model SplitInventoryItem {
+  // business only — stock/assets purchased with pooled funds
+  id          String   @id @default(uuid())
+  groupId     String
+  cycleId     String? // optional cycle association
+  name        String
+  quantity    Int      @default(1)
+  unitCost    Int      @default(0) // paise per unit
+  category    String? // business category id
+  notes       String?
+  createdById String // Clerk userId who entered it
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  group SplitGroup        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  cycle SplitBudgetCycle? @relation(fields: [cycleId], references: [id], onDelete: SetNull)
+
+  @@index([groupId])
+  @@map("split_inventory_items")
 }
 
 model SplitContribution {

@@ -4,6 +4,7 @@ import { RunwayWidget } from './RunwayWidget'
 import { BudgetCyclePanel } from './BudgetCyclePanel'
 import { ContributionTracker } from './ContributionTracker'
 import { ExpenseBreakdown } from './ExpenseBreakdown'
+import { InventoryPanel } from './InventoryPanel'
 import { useCycles, type SplitGroupDetail } from '@/lib/queries/split'
 
 /** Business-mode group dashboard: metrics, budget cycles, contributions, breakdown. */
@@ -40,7 +41,10 @@ export function BusinessDashboard({ group }: { group: SplitGroupDetail }) {
         )}
       </div>
 
-      <ExpenseBreakdown expenses={group.expenses} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <ExpenseBreakdown expenses={group.expenses} />
+        <InventoryPanel groupId={group.id} />
+      </div>
     </div>
   )
 }
