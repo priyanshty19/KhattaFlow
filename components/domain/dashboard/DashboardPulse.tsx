@@ -18,7 +18,7 @@ export function DashboardPulse({ month }: { month: string }) {
   return (
     <div className="space-y-2">
       <div>
-        <h2 className="text-xl font-semibold text-zinc-100">Dashboard</h2>
+        <h2 className="text-xl font-semibold text-zinc-100">Monthly Expense Dashboard</h2>
         <p className="text-sm text-zinc-400 mt-0.5">
           {savingsRate > 0
             ? <>Your savings rate is up <span className="text-emerald-400 font-semibold">{savingsRate.toFixed(1)}%</span> from last month.</>

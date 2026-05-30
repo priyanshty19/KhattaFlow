@@ -1,6 +1,5 @@
 'use client'
 import { Plus, Wallet } from 'lucide-react'
-import { UserButton } from '@clerk/nextjs'
 import { MonthSelector } from '@/components/shared/MonthSelector'
 import { NotificationCenter } from '@/components/layout/NotificationCenter'
 import { cn } from '@/lib/utils/cn'
@@ -67,7 +66,6 @@ export function TopBar({ title, month, onMonthChange, actions, showQuickAdd = tr
             </button>
           )}
           <NotificationCenter />
-          <UserButton />
         </div>
       </div>
     </header>
