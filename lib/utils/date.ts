@@ -1,4 +1,4 @@
-import { format, parse, startOfMonth, endOfMonth, getDaysInMonth as fnsGetDaysInMonth, differenceInDays, parseISO } from 'date-fns'
+import { format, parse, startOfMonth, endOfMonth, getDaysInMonth as fnsGetDaysInMonth, differenceInDays, parseISO, formatDistanceToNowStrict } from 'date-fns'
 
 /** Returns '2026-05' for current month */
 export function getCurrentMonth(): string {
@@ -75,6 +75,18 @@ export function formatDateLong(date: Date | string): string {
 /** Today's ISO date string */
 export function todayISO(): string {
   return format(new Date(), 'yyyy-MM-dd')
+}
+
+/** Compact relative time: '5m', '3h', '2d' ago (e.g. for notifications). */
+export function formatRelativeTime(date: Date | string): string {
+  const d = typeof date === 'string' ? parseISO(date) : date
+  return formatDistanceToNowStrict(d, { addSuffix: false })
+    .replace(/ seconds?/, 's')
+    .replace(/ minutes?/, 'm')
+    .replace(/ hours?/, 'h')
+    .replace(/ days?/, 'd')
+    .replace(/ months?/, 'mo')
+    .replace(/ years?/, 'y')
 }
 
 /** Last N months ending at current month */

@@ -40,6 +40,9 @@ model User {
   cardApplyIntents            CardApplyIntent[]
   financialGoals              FinancialGoal[]
   investmentAllocations       InvestmentAllocation[]
+  createdGroups               SplitGroup[]  @relation("CreatedGroups")
+  splitMemberships            SplitMember[]
+  notifications               Notification[]
 
   @@map("users")
 }
@@ -403,4 +406,200 @@ model UserCreditCard {
 
   @@index([userId])
   @@map("user_credit_cards")
+}
+
+// ─── Split & Share ───────────────────────────────────────────────────────────
+
+model SplitGroup {
+  id          String   @id @default(uuid())
+  createdById String   // Clerk userId of creator
+  name        String
+  type        String   // 'personal' (friends/outing/trip) | 'business'
+  currency    String   @default("INR")
+  simplifyDebts Boolean @default(true) // when false, show direct who-owes-whom instead of minimized transfers
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  creator     User              @relation("CreatedGroups", fields: [createdById], references: [id], onDelete: Cascade)
+  members     SplitMember[]
+  expenses    SplitExpense[]
+  settlements SplitSettlement[]
+  cycles      SplitBudgetCycle[]
+  invites     SplitInvite[]
+  inventory   SplitInventoryItem[]
+
+  @@index([createdById])
+  @@map("split_groups")
+}
+
+model SplitMember {
+  id        String   @id @default(uuid())
+  groupId   String
+  userId    String?  // linked FinGrid user once they join; null while pending
+  name      String
+  email     String?
+  status    String   @default("active") // 'active' | 'pending' (invited, not yet joined)
+  role      String   @default("member") // 'owner' | 'member'
+  createdAt DateTime @default(now())
+
+  group         SplitGroup          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user          User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+  paidExpenses  SplitExpense[]      @relation("PaidBy")
+  shares        SplitExpenseShare[]
+  contributions SplitContribution[]
+
+  @@index([groupId])
+  @@index([userId])
+  @@map("split_members")
+}
+
+model SplitInvite {
+  id           String    @id @default(uuid())
+  groupId      String
+  email        String
+  token        String    @unique @default(uuid())
+  invitedById  String    // Clerk userId
+  status       String    @default("pending") // pending | accepted | expired
+  acceptedById String?   // Clerk userId who accepted
+  expiresAt    DateTime
+  createdAt    DateTime  @default(now())
+
+  group SplitGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+  @@index([token])
+  @@map("split_invites")
+}
+
+model SplitExpense {
+  id          String   @id @default(uuid())
+  groupId     String
+  cycleId     String?  // business only
+  description String
+  amount      Int      // paise
+  paidById    String   // SplitMember
+  category    String?  // business categories
+  date        DateTime @db.Date
+  splitType   String   // equal | exact | percentage | shares
+  notes       String?
+  createdById String   // Clerk userId who entered it
+  createdAt   DateTime @default(now())
+
+  group  SplitGroup          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  paidBy SplitMember         @relation("PaidBy", fields: [paidById], references: [id])
+  cycle  SplitBudgetCycle?   @relation(fields: [cycleId], references: [id])
+  shares SplitExpenseShare[]
+
+  @@index([groupId])
+  @@map("split_expenses")
+}
+
+model SplitExpenseShare {
+  id        String @id @default(uuid())
+  expenseId String
+  memberId  String
+  amount    Int    // paise owed by this member
+
+  expense SplitExpense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  member  SplitMember  @relation(fields: [memberId], references: [id])
+
+  @@unique([expenseId, memberId])
+  @@map("split_expense_shares")
+}
+
+model SplitSettlement {
+  id           String    @id @default(uuid())
+  groupId      String
+  fromMemberId String
+  toMemberId   String
+  amount       Int       // paise
+  isSettled    Boolean   @default(false)
+  settledAt    DateTime?
+  note         String?
+  createdAt    DateTime  @default(now())
+
+  group SplitGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+  @@map("split_settlements")
+}
+
+model SplitBudgetCycle {
+  // business only
+  id          String   @id @default(uuid())
+  groupId     String
+  name        String
+  startDate   DateTime @db.Date
+  endDate     DateTime @db.Date
+  totalBudget Int      @default(0) // planned total = allocations + buffer, paise
+  bufferAmount Int     @default(0) // reserve held back, paise
+  notes       String?
+  allocations Json? // [{ category, amount }] per-category planned budget, paise
+  status      String   @default("active") // draft | active | completed
+  createdAt   DateTime @default(now())
+
+  group         SplitGroup           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  expenses      SplitExpense[]
+  contributions SplitContribution[]
+  inventory     SplitInventoryItem[]
+
+  @@index([groupId])
+  @@map("split_budget_cycles")
+}
+
+model SplitInventoryItem {
+  // business only — stock/assets purchased with pooled funds
+  id          String   @id @default(uuid())
+  groupId     String
+  cycleId     String? // optional cycle association
+  name        String
+  quantity    Int      @default(1)
+  unitCost    Int      @default(0) // paise per unit
+  category    String? // business category id
+  notes       String?
+  createdById String // Clerk userId who entered it
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  group SplitGroup        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  cycle SplitBudgetCycle? @relation(fields: [cycleId], references: [id], onDelete: SetNull)
+
+  @@index([groupId])
+  @@map("split_inventory_items")
+}
+
+model SplitContribution {
+  // business only
+  id             String   @id @default(uuid())
+  cycleId        String
+  memberId       String
+  requiredAmount Int      @default(0)
+  paidAmount     Int      @default(0)
+  status         String   @default("pending") // pending|partial|complete|overdue
+  updatedAt      DateTime @updatedAt
+
+  cycle  SplitBudgetCycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  member SplitMember      @relation(fields: [memberId], references: [id])
+
+  @@unique([cycleId, memberId])
+  @@map("split_contributions")
+}
+
+// ─── Notifications ───────────────────────────────────────────────────────────
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   // recipient Clerk userId
+  type      String   // split_added | split_expense | split_settlement | settlement_reminder
+  title     String
+  body      String?
+  link      String?  // in-app path e.g. /split/{groupId}
+  groupId   String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+  @@map("notifications")
 }

@@ -1,7 +1,8 @@
 'use client'
-import { Bell, Plus, Wallet } from 'lucide-react'
+import { Plus, Wallet } from 'lucide-react'
 import { UserButton } from '@clerk/nextjs'
 import { MonthSelector } from '@/components/shared/MonthSelector'
+import { NotificationCenter } from '@/components/layout/NotificationCenter'
 import { cn } from '@/lib/utils/cn'
 import { useUIStore } from '@/stores/ui.store'
 
@@ -48,9 +49,7 @@ export function TopBar({ title, month, onMonthChange, actions, className }: TopB
         >
           <Plus className="w-4 h-4" />
         </button>
-        <button className="hidden md:flex p-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors">
-          <Bell className="w-4 h-4" />
-        </button>
+        <NotificationCenter />
         <UserButton />
       </div>
     </header>

@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, ArrowLeftRight, PieChart, Target, Rocket, CreditCard, Settings } from 'lucide-react'
+import { LayoutDashboard, ArrowLeftRight, PieChart, Target, Rocket, Users, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
 const NAV_ITEMS = [
@@ -10,7 +10,7 @@ const NAV_ITEMS = [
   { href: '/analytics',     label: 'Analytics',    icon: PieChart },
   { href: '/budgets',       label: 'Budget',       icon: Target },
   { href: '/goals',         label: 'Goals',        icon: Rocket },
-  { href: '/credit-cards',  label: 'Cards',        icon: CreditCard },
+  { href: '/split',         label: 'Split',        icon: Users },
   { href: '/settings',      label: 'Settings',     icon: Settings },
 ]
 
