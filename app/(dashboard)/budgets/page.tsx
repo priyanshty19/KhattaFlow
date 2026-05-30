@@ -15,7 +15,7 @@ export default function BudgetsPage() {
   const [view, setView] = useState<View>('monthly')
 
   const toggle = (
-    <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-700/50 rounded-lg p-0.5">
+    <div className="inline-flex items-center gap-1 bg-zinc-900 border border-zinc-700/50 rounded-lg p-0.5">
       <button
         onClick={() => setView('monthly')}
         className={cn(
@@ -56,7 +56,7 @@ export default function BudgetsPage() {
           <MoneyTabs />
         </div>
         {/* Monthly / Planner view switch — sits above the heading (was overlapping the header logo) */}
-        <div className="mb-4">{toggle}</div>
+        <div className="mb-4 flex justify-center">{toggle}</div>
         <div className="mb-4 md:mb-6">
           <h2 className="text-lg md:text-xl font-semibold text-zinc-100">Budget</h2>
           <p className="text-sm text-zinc-400 mt-0.5">

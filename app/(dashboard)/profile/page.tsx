@@ -1,6 +1,6 @@
 'use client'
 import Link from 'next/link'
-import { useUser, UserButton } from '@clerk/nextjs'
+import { useUser, UserButton, useClerk } from '@clerk/nextjs'
 import { Settings, Upload, CreditCard, ShieldCheck, ChevronRight } from 'lucide-react'
 import { TopBar } from '@/components/layout/TopBar'
 
@@ -21,6 +21,7 @@ const LINKS: {
 
 export default function ProfilePage() {
   const { user } = useUser()
+  const { openUserProfile } = useClerk()
 
   return (
     <>
@@ -31,14 +32,22 @@ export default function ProfilePage() {
           <p className="text-sm text-zinc-400 mt-0.5">Your account, tools, and settings.</p>
         </div>
 
-        {/* Account card */}
-        <div className="bg-zinc-900 border border-zinc-600/40 rounded-xl p-5 flex items-center gap-4">
-          <UserButton />
-          <div className="min-w-0">
+        {/* Account card — whole card opens Clerk account management; the avatar
+            still opens its own menu (manage / sign out) on click. */}
+        <button
+          type="button"
+          onClick={() => openUserProfile()}
+          className="w-full text-left bg-zinc-900 border border-zinc-600/40 rounded-xl p-5 flex items-center gap-4 hover:bg-zinc-800/50 transition-colors"
+        >
+          <span onClick={e => e.stopPropagation()} className="shrink-0">
+            <UserButton />
+          </span>
+          <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-zinc-100 truncate">{user?.fullName ?? 'Your account'}</p>
             <p className="text-xs text-zinc-500 truncate">{user?.primaryEmailAddress?.emailAddress ?? '—'}</p>
           </div>
-        </div>
+          <ChevronRight className="w-4 h-4 text-zinc-600 shrink-0" />
+        </button>
 
         {/* Tools & settings */}
         <div className="bg-zinc-900 border border-zinc-600/40 rounded-xl divide-y divide-zinc-800 overflow-hidden">

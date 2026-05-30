@@ -3,9 +3,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Home, ArrowLeftRight, PieChart, Target,
-  CreditCard, Settings, Plus, Upload, Wallet, Rocket, Users,
+  CreditCard, Plus, Wallet, Rocket, Users, UserCircle,
 } from 'lucide-react'
-import { UserButton } from '@clerk/nextjs'
 import { cn } from '@/lib/utils/cn'
 import { useUIStore } from '@/stores/ui.store'
 
@@ -40,9 +39,11 @@ const NAV_GROUPS: { label: string | null; items: NavItem[] }[] = [
   },
 ]
 
+// Single desktop entry point to the Profile hub, which now houses account,
+// Sync Transactions, Settings, Credit Cards, and Privacy & Terms — so those no
+// longer need their own rows here (they'd be redundant with the hub).
 const BOTTOM_ITEMS: { href: string; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { href: '/settings/import', label: 'Sync Transactions', icon: Upload },
-  { href: '/settings',        label: 'Settings',   icon: Settings },
+  { href: '/profile', label: 'Profile', icon: UserCircle },
 ]
 
 export function Sidebar() {
@@ -101,21 +102,24 @@ export function Sidebar() {
           Add Transaction
         </button>
 
-        {BOTTOM_ITEMS.map(({ href, label, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href as any}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60 transition-all duration-150"
-          >
-            <Icon className="w-4 h-4 shrink-0" />
-            <span>{label}</span>
-          </Link>
-        ))}
-
-        <div className="flex items-center gap-3 px-3 py-2.5">
-          <UserButton />
-          <span className="text-xs text-zinc-500">Account</span>
-        </div>
+        {BOTTOM_ITEMS.map(({ href, label, icon: Icon }) => {
+          const isActive = pathname === href
+          return (
+            <Link
+              key={href}
+              href={href as any}
+              className={cn(
+                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150',
+                isActive
+                  ? 'bg-emerald-500/10 text-emerald-400 font-semibold border-r-2 border-emerald-400'
+                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
+              )}
+            >
+              <Icon className="w-4 h-4 shrink-0" />
+              <span>{label}</span>
+            </Link>
+          )
+        })}
       </div>
     </aside>
   )
