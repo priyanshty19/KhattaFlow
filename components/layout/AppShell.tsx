@@ -3,7 +3,6 @@ import { Sidebar } from './Sidebar'
 import { BottomNav } from './BottomNav'
 import { QuickAddModal } from '@/components/domain/transactions/QuickAddModal'
 import { EditTransactionModal } from '@/components/domain/transactions/EditTransactionModal'
-import { GmailOnboardModal } from '@/components/domain/dashboard/GmailOnboardModal'
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -15,7 +14,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <BottomNav />
       <QuickAddModal />
       <EditTransactionModal />
-      <GmailOnboardModal />
     </div>
   )
 }
