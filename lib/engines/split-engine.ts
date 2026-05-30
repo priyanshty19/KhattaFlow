@@ -181,6 +181,55 @@ export function minimizeSettlements(balances: { memberId: string; net: number }[
   return transfers
 }
 
+/**
+ * Direct (un-simplified) settlements: who owes whom based on the *actual* expense
+ * shares, rather than the minimized transfer set. For each expense, every
+ * non-payer participant owes the payer their share. Reciprocal pairs are netted
+ * (if A owes B and B owes A, only the difference remains), and any recorded
+ * settlements are applied per direction. Used when a group disables "simplify debts".
+ */
+export function computeDirectSettlements(
+  expenses: ExpenseForBalance[],
+  settlements: { fromMemberId: string; toMemberId: string; amount: number }[] = [],
+): Transfer[] {
+  // Aggregate raw debts: key `${from}|${to}` → amount the `from` member owes `to`.
+  const debts = new Map<string, number>()
+  const add = (from: string, to: string, amount: number) => {
+    if (from === to || amount <= 0) return
+    const key = `${from}|${to}`
+    debts.set(key, (debts.get(key) ?? 0) + amount)
+  }
+
+  for (const e of expenses) {
+    for (const sh of e.shares) add(sh.memberId, e.paidById, sh.amount)
+  }
+  // Apply recorded settlements: a payment from→to pays *down* the from→to debt,
+  // so it counts as a credit in the reverse direction during netting.
+  for (const s of settlements) add(s.toMemberId, s.fromMemberId, s.amount)
+
+  // Net reciprocal pairs so we never show both A→B and B→A.
+  const net = new Map<string, number>() // key uses the from→to of the surviving direction
+  const seen = new Set<string>()
+  for (const [key, amount] of Array.from(debts.entries())) {
+    if (seen.has(key)) continue
+    const [from, to] = key.split('|')
+    const reverseKey = `${to}|${from}`
+    const reverse = debts.get(reverseKey) ?? 0
+    seen.add(key)
+    seen.add(reverseKey)
+    const diff = amount - reverse
+    if (diff > 0) net.set(key, diff)
+    else if (diff < 0) net.set(reverseKey, -diff)
+  }
+
+  return Array.from(net.entries())
+    .map(([key, amount]) => {
+      const [fromMemberId, toMemberId] = key.split('|')
+      return { fromMemberId, toMemberId, amount }
+    })
+    .filter((t) => t.amount > 0)
+}
+
 // ── Business pooled-budget helpers ─────────────────────────────────────────────
 
 export type ContributionStatus = 'pending' | 'partial' | 'complete' | 'overdue'

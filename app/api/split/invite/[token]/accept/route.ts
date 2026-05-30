@@ -41,9 +41,11 @@ export async function POST(_req: Request, { params }: { params: { token: string 
   const existingUser = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } })
   const isNewUser = !existingUser
 
+  // We need the Clerk profile for the display name in several branches.
+  const clerkUser = await currentUser()
+
   // Ensure a users row exists (keyed by Clerk userId) so the membership FK resolves.
   if (isNewUser) {
-    const clerkUser = await currentUser()
     await prisma.user.create({
       data: {
         id: userId,
@@ -54,17 +56,21 @@ export async function POST(_req: Request, { params }: { params: { token: string 
   }
 
   // Link the pending membership (or create one) for this group.
+  // A group-level link has an empty email — never match it to a specific pending
+  // member, so always create a fresh membership for the joiner in that case.
   const inviteEmail = invite.email.toLowerCase().trim()
-  const pending = await prisma.splitMember.findFirst({
-    where: { groupId, status: 'pending', OR: [{ email: inviteEmail }, { userId: null }] },
-    orderBy: { createdAt: 'asc' },
-  })
+  const pending = inviteEmail
+    ? await prisma.splitMember.findFirst({
+        where: { groupId, status: 'pending', email: inviteEmail },
+        orderBy: { createdAt: 'asc' },
+      })
+    : null
 
-  const clerkUser = isNewUser ? null : await currentUser()
   const displayName =
     pending?.name ??
     clerkUser?.fullName ??
-    inviteEmail.split('@')[0]
+    clerkUser?.emailAddresses[0]?.emailAddress?.split('@')[0] ??
+    (inviteEmail ? inviteEmail.split('@')[0] : 'Member')
 
   if (pending) {
     await prisma.splitMember.update({
@@ -73,7 +79,14 @@ export async function POST(_req: Request, { params }: { params: { token: string 
     })
   } else {
     await prisma.splitMember.create({
-      data: { groupId, userId, name: displayName, email: inviteEmail, status: 'active', role: 'member' },
+      data: {
+        groupId,
+        userId,
+        name: displayName,
+        email: inviteEmail || clerkUser?.emailAddresses[0]?.emailAddress || null,
+        status: 'active',
+        role: 'member',
+      },
     })
   }
 

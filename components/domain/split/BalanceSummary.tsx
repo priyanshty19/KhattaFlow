@@ -1,12 +1,31 @@
 'use client'
 import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay'
-import type { BalanceDTO, SplitMemberDTO } from '@/lib/queries/split'
+import type { BalanceDTO, SplitMemberDTO, TransferDTO } from '@/lib/queries/split'
 import { cn } from '@/lib/utils/cn'
 
-export function BalanceSummary({ balances, members, myMemberId }: { balances: BalanceDTO[]; members: SplitMemberDTO[]; myMemberId: string }) {
+export function BalanceSummary({
+  balances,
+  members,
+  myMemberId,
+  suggestions = [],
+}: {
+  balances: BalanceDTO[]
+  members: SplitMemberDTO[]
+  myMemberId: string
+  suggestions?: TransferDTO[]
+}) {
   const nameOf = (id: string) => members.find((m) => m.id === id)?.name ?? '—'
   const mine = balances.find((b) => b.memberId === myMemberId)
   const myNet = mine?.net ?? 0
+
+  // Splitwise-style "you owe X / X owes you" lines derived from the suggested transfers.
+  const myLines = suggestions
+    .filter((t) => t.fromMemberId === myMemberId || t.toMemberId === myMemberId)
+    .map((t) =>
+      t.fromMemberId === myMemberId
+        ? { name: nameOf(t.toMemberId), amount: t.amount, owe: true }
+        : { name: nameOf(t.fromMemberId), amount: t.amount, owe: false },
+    )
 
   return (
     <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4">
@@ -17,6 +36,22 @@ export function BalanceSummary({ balances, members, myMemberId }: { balances: Ba
           {myNet !== 0 && <CurrencyDisplay amount={Math.abs(myNet)} size="md" className={myNet > 0 ? 'text-emerald-400' : 'text-rose-400'} />}
         </div>
       </div>
+
+      {myLines.length > 0 && (
+        <div className="mb-3 pb-3 border-b border-zinc-800/70 space-y-1">
+          {myLines.map((l, i) => (
+            <p key={i} className="text-xs text-zinc-400">
+              {l.owe ? (
+                <>You owe <span className="text-rose-400">{l.name}</span> </>
+              ) : (
+                <><span className="text-emerald-400">{l.name}</span> owes you </>
+              )}
+              <CurrencyDisplay amount={l.amount} size="xs" className="text-zinc-300" />
+            </p>
+          ))}
+        </div>
+      )}
+
       <div className="space-y-1.5">
         {balances.map((b) => (
           <div key={b.memberId} className="flex items-center justify-between text-sm">

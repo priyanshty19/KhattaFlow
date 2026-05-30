@@ -12,6 +12,7 @@ export const createGroupSchema = z.object({
 
 export const updateGroupSchema = z.object({
   name: z.string().min(1).max(80).optional(),
+  simplifyDebts: z.boolean().optional(),
 })
 
 // ── Members / invites ────────────────────────────────────────────────────────

@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { ensureUser } from '@/lib/utils/ensure-user'
 import { createGroupSchema } from '@/lib/validations/split'
-import { computeBalances, applySettlements } from '@/lib/engines/split-engine'
+import { computeBalances, applySettlements, minimizeSettlements } from '@/lib/engines/split-engine'
 
 // GET — all groups the caller is an active member of, with their net balance.
 export async function GET() {
@@ -42,6 +42,19 @@ export async function GET() {
       (acc, e) => (e.createdAt > acc ? e.createdAt : acc),
       g.updatedAt,
     )
+
+    // Splitwise-style per-member breakdown lines relative to me ("you owe X",
+    // "Y owes you"), derived from the minimized transfer set.
+    const nameOf = (id: string) => g.members.find((m) => m.id === id)?.name ?? '—'
+    const transfers = minimizeSettlements(balances.map((b) => ({ memberId: b.memberId, net: b.net })))
+    const myBreakdown = transfers
+      .filter((t) => t.fromMemberId === myMemberId || t.toMemberId === myMemberId)
+      .map((t) =>
+        t.fromMemberId === myMemberId
+          ? { name: nameOf(t.toMemberId), amount: t.amount, owe: true } // I pay them
+          : { name: nameOf(t.fromMemberId), amount: t.amount, owe: false }, // they pay me
+      )
+
     return {
       id: g.id,
       name: g.name,
@@ -50,6 +63,7 @@ export async function GET() {
       memberCount: g.members.filter((m) => m.status === 'active').length,
       members: g.members.map((m) => ({ id: m.id, name: m.name, status: m.status })),
       myNet,
+      myBreakdown,
       expenseCount: g.expenses.length,
       lastActivity,
     }

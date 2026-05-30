@@ -4,6 +4,7 @@ import {
   computeBalances,
   minimizeSettlements,
   applySettlements,
+  computeDirectSettlements,
   poolObligations,
   computeContributionStatus,
   type ExpenseForBalance,
@@ -185,6 +186,131 @@ describe('applySettlements', () => {
       { paidById: 'a', shares: [{ memberId: 'a', amount: 1000 }, { memberId: 'b', amount: 1000 }] },
     ])
     expect(applySettlements(gross, [])).toEqual(gross)
+  })
+})
+
+describe('computeDirectSettlements', () => {
+  it('produces a direct debt from each non-payer to the payer', () => {
+    const expenses: ExpenseForBalance[] = [
+      { paidById: 'a', shares: [{ memberId: 'a', amount: 1000 }, { memberId: 'b', amount: 1000 }, { memberId: 'c', amount: 1000 }] },
+    ]
+    const transfers = computeDirectSettlements(expenses)
+    expect(transfers).toHaveLength(2)
+    expect(transfers).toContainEqual({ fromMemberId: 'b', toMemberId: 'a', amount: 1000 })
+    expect(transfers).toContainEqual({ fromMemberId: 'c', toMemberId: 'a', amount: 1000 })
+  })
+
+  it('nets reciprocal debts between two members into one direction', () => {
+    const expenses: ExpenseForBalance[] = [
+      // a paid; b owes a 1000
+      { paidById: 'a', shares: [{ memberId: 'a', amount: 1000 }, { memberId: 'b', amount: 1000 }] },
+      // b paid; a owes b 300
+      { paidById: 'b', shares: [{ memberId: 'a', amount: 300 }, { memberId: 'b', amount: 300 }] },
+    ]
+    const transfers = computeDirectSettlements(expenses)
+    expect(transfers).toEqual([{ fromMemberId: 'b', toMemberId: 'a', amount: 700 }])
+  })
+
+  it('does NOT simplify chains the way minimizeSettlements does', () => {
+    // a paid for {a,b}; b paid for {b,c}. Direct: b→a and c→b (a chain remains).
+    const expenses: ExpenseForBalance[] = [
+      { paidById: 'a', shares: [{ memberId: 'a', amount: 500 }, { memberId: 'b', amount: 500 }] },
+      { paidById: 'b', shares: [{ memberId: 'b', amount: 500 }, { memberId: 'c', amount: 500 }] },
+    ]
+    const direct = computeDirectSettlements(expenses)
+    expect(direct).toContainEqual({ fromMemberId: 'b', toMemberId: 'a', amount: 500 })
+    expect(direct).toContainEqual({ fromMemberId: 'c', toMemberId: 'b', amount: 500 })
+  })
+
+  it('applies recorded settlements to reduce the outstanding direct debt', () => {
+    const expenses: ExpenseForBalance[] = [
+      { paidById: 'a', shares: [{ memberId: 'a', amount: 1000 }, { memberId: 'b', amount: 1000 }] },
+    ]
+    const transfers = computeDirectSettlements(expenses, [{ fromMemberId: 'b', toMemberId: 'a', amount: 1000 }])
+    expect(transfers).toEqual([])
+  })
+})
+
+// Apply a settlement set back onto balances and return the residual net per member.
+// A correct settlement set drives every residual to exactly zero.
+function residualNets(
+  balances: { memberId: string; net: number }[],
+  transfers: { fromMemberId: string; toMemberId: string; amount: number }[],
+) {
+  const net = new Map(balances.map((b) => [b.memberId, b.net]))
+  for (const t of transfers) {
+    // debtor pays (net rises toward 0), creditor receives (net falls toward 0)
+    net.set(t.fromMemberId, (net.get(t.fromMemberId) ?? 0) + t.amount)
+    net.set(t.toMemberId, (net.get(t.toMemberId) ?? 0) - t.amount)
+  }
+  return net
+}
+
+describe('Splitwise parity — Simplified vs Itemised reconcile identically', () => {
+  // A Goa-Trip-style group: 3 members, 3 expenses with mixed participants and split types.
+  const expenses: ExpenseForBalance[] = [
+    // P paid 50,00,000 split equally across all three (paise)
+    { paidById: 'p', shares: [
+      { memberId: 'p', amount: 16_66_668_00 },
+      { memberId: 'm2', amount: 16_66_666_00 },
+      { memberId: 'marc', amount: 16_66_666_00 },
+    ] },
+    // Me2 paid 10,00,000 split between P and Me2 only
+    { paidById: 'm2', shares: [
+      { memberId: 'p', amount: 5_00_000_00 },
+      { memberId: 'm2', amount: 5_00_000_00 },
+    ] },
+    // MARC paid 12,30,142 split by percentage across all three
+    { paidById: 'marc', shares: [
+      { memberId: 'p', amount: 4_10_047_00 },
+      { memberId: 'm2', amount: 4_10_047_00 },
+      { memberId: 'marc', amount: 4_10_048_00 },
+    ] },
+  ]
+
+  const gross = computeBalances(expenses)
+  const ids = ['p', 'm2', 'marc']
+
+  it('balances net to zero across the group', () => {
+    expect(gross.reduce((s, b) => s + b.net, 0)).toBe(0)
+  })
+
+  it('Simplified set zeroes everyone and uses at most n-1 transfers', () => {
+    const simplified = minimizeSettlements(gross.map((b) => ({ memberId: b.memberId, net: b.net })))
+    expect(simplified.length).toBeLessThanOrEqual(ids.length - 1)
+    const residual = residualNets(gross, simplified)
+    for (const id of ids) expect(residual.get(id)).toBe(0)
+  })
+
+  it('Itemised set zeroes everyone too (may use more transfers — shows real chains)', () => {
+    const itemised = computeDirectSettlements(expenses)
+    const residual = residualNets(gross, itemised)
+    for (const id of ids) expect(residual.get(id)).toBe(0)
+    // itemised never simplifies, so it should have >= as many transfers as simplified
+    const simplified = minimizeSettlements(gross.map((b) => ({ memberId: b.memberId, net: b.net })))
+    expect(itemised.length).toBeGreaterThanOrEqual(simplified.length)
+  })
+
+  it('never emits both directions between the same pair (no A→B and B→A)', () => {
+    const itemised = computeDirectSettlements(expenses)
+    const seen = new Set<string>()
+    for (const t of itemised) {
+      expect(seen.has(`${t.toMemberId}|${t.fromMemberId}`)).toBe(false)
+      seen.add(`${t.fromMemberId}|${t.toMemberId}`)
+    }
+  })
+
+  it('stays consistent after a recorded settlement (both views reconcile to the remainder)', () => {
+    const recorded = [{ fromMemberId: 'p', toMemberId: 'marc', amount: 1_00_000_00 }]
+    const netBalances = applySettlements(gross, recorded)
+
+    const simplified = minimizeSettlements(netBalances.map((b) => ({ memberId: b.memberId, net: b.net })))
+    const itemised = computeDirectSettlements(expenses, recorded)
+
+    for (const id of ids) {
+      expect(residualNets(netBalances, simplified).get(id)).toBe(0)
+      expect(residualNets(netBalances, itemised).get(id)).toBe(0)
+    }
   })
 })
 

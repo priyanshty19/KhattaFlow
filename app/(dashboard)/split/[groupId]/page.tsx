@@ -1,15 +1,16 @@
 'use client'
 import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeft, Plus, Settings } from 'lucide-react'
 import { TopBar } from '@/components/layout/TopBar'
-import { useSplitGroup, useDeleteGroup } from '@/lib/queries/split'
+import { useSplitGroup } from '@/lib/queries/split'
 import { BalanceSummary } from '@/components/domain/split/BalanceSummary'
 import { MemberList } from '@/components/domain/split/MemberList'
 import { SettlementSuggestions } from '@/components/domain/split/SettlementSuggestions'
 import { ActivityFeed } from '@/components/domain/split/ActivityFeed'
 import { AddExpenseModal } from '@/components/domain/split/AddExpenseModal'
 import { InviteMemberModal } from '@/components/domain/split/InviteMemberModal'
+import { GroupSettingsModal } from '@/components/domain/split/GroupSettingsModal'
 import { BusinessDashboard } from '@/components/domain/split/BusinessDashboard'
 
 export default function GroupDetailPage() {
@@ -17,9 +18,9 @@ export default function GroupDetailPage() {
   const router = useRouter()
   const groupId = params.groupId
   const { data: group, isLoading } = useSplitGroup(groupId)
-  const deleteGroup = useDeleteGroup()
   const [addOpen, setAddOpen] = useState(false)
   const [inviteOpen, setInviteOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   if (isLoading || !group) {
     return (
@@ -32,8 +33,6 @@ export default function GroupDetailPage() {
       </>
     )
   }
-
-  const isOwner = group.myRole === 'owner'
 
   return (
     <>
@@ -56,18 +55,12 @@ export default function GroupDetailPage() {
           >
             <ArrowLeft className="w-4 h-4" /> All groups
           </button>
-          {isOwner && (
-            <button
-              onClick={() => {
-                if (confirm('Delete this group and all its expenses? This cannot be undone.')) {
-                  deleteGroup.mutate(groupId, { onSuccess: () => router.push('/split' as any) })
-                }
-              }}
-              className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-rose-400 transition-colors"
-            >
-              <Trash2 className="w-3.5 h-3.5" /> Delete group
-            </button>
-          )}
+          <button
+            onClick={() => setSettingsOpen(true)}
+            className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-200 transition-colors"
+          >
+            <Settings className="w-3.5 h-3.5" /> Settings
+          </button>
         </div>
 
         {group.type === 'business' ? (
@@ -83,11 +76,11 @@ export default function GroupDetailPage() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2 space-y-4">
-              <SettlementSuggestions groupId={groupId} suggestions={group.suggestions} members={group.members} />
+              <SettlementSuggestions groupId={groupId} suggestions={group.suggestions} members={group.members} simplifyDebts={group.simplifyDebts} canSimplify={group.myRole === 'owner'} />
               <ActivityFeed groupId={groupId} groupType="personal" expenses={group.expenses} members={group.members} myMemberId={group.myMemberId} />
             </div>
             <div className="space-y-4">
-              <BalanceSummary balances={group.balances} members={group.members} myMemberId={group.myMemberId} />
+              <BalanceSummary balances={group.balances} members={group.members} myMemberId={group.myMemberId} suggestions={group.suggestions} />
               <MemberList groupId={groupId} members={group.members} onInvite={() => setInviteOpen(true)} />
             </div>
           </div>
@@ -112,6 +105,7 @@ export default function GroupDetailPage() {
         onClose={() => setAddOpen(false)}
       />
       <InviteMemberModal groupId={groupId} open={inviteOpen} onClose={() => setInviteOpen(false)} />
+      <GroupSettingsModal group={group} open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </>
   )
 }

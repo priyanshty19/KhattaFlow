@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getGroupAccess, isOwner } from '@/lib/utils/split-access'
 import { updateGroupSchema } from '@/lib/validations/split'
-import { computeBalances, minimizeSettlements, applySettlements } from '@/lib/engines/split-engine'
+import { computeBalances, minimizeSettlements, applySettlements, computeDirectSettlements } from '@/lib/engines/split-engine'
 
 // GET — full group detail: members, expenses, computed balances + suggested transfers.
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
@@ -38,13 +38,21 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     .filter((s) => s.isSettled)
     .map((s) => ({ fromMemberId: s.fromMemberId, toMemberId: s.toMemberId, amount: s.amount }))
   const balances = applySettlements(grossBalances, recorded)
-  const suggestions = minimizeSettlements(balances.map((b) => ({ memberId: b.memberId, net: b.net })))
+  // When "simplify debts" is on (default) show the minimized transfer set; otherwise
+  // show the direct who-owes-whom derived from the actual expense shares.
+  const suggestions = group.simplifyDebts
+    ? minimizeSettlements(balances.map((b) => ({ memberId: b.memberId, net: b.net })))
+    : computeDirectSettlements(
+        group.expenses.map((e) => ({ paidById: e.paidById, shares: e.shares })),
+        recorded,
+      )
 
   return NextResponse.json({
     id: group.id,
     name: group.name,
     type: group.type,
     currency: group.currency,
+    simplifyDebts: group.simplifyDebts,
     createdById: group.createdById,
     myMemberId: access.member.id,
     myRole: access.member.role,

@@ -2,12 +2,14 @@
 import { useState } from 'react'
 import { UserPlus, Crown, Clock, Link2, Check } from 'lucide-react'
 import type { SplitMemberDTO } from '@/lib/queries/split'
-import { useMemberInviteLink } from '@/lib/queries/split'
+import { useMemberInviteLink, useGroupInviteLink } from '@/lib/queries/split'
 import { cn } from '@/lib/utils/cn'
 
 export function MemberList({ groupId, members, onInvite }: { groupId: string; members: SplitMemberDTO[]; onInvite: () => void }) {
   const inviteLink = useMemberInviteLink(groupId)
+  const groupLink = useGroupInviteLink(groupId)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [copiedGroup, setCopiedGroup] = useState(false)
 
   const copyLink = (memberId: string) => {
     inviteLink.mutate(memberId, {
@@ -24,16 +26,41 @@ export function MemberList({ groupId, members, onInvite }: { groupId: string; me
     })
   }
 
+  const copyGroupLink = () => {
+    groupLink.mutate(undefined, {
+      onSuccess: async ({ inviteUrl }) => {
+        try {
+          await navigator.clipboard.writeText(inviteUrl)
+          setCopiedGroup(true)
+          setTimeout(() => setCopiedGroup(false), 1500)
+        } catch {
+          window.prompt('Copy this invite link:', inviteUrl)
+        }
+      },
+    })
+  }
+
   return (
     <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-zinc-200">Members</h3>
-        <button
-          onClick={onInvite}
-          className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium transition-colors"
-        >
-          <UserPlus className="w-3.5 h-3.5" /> Invite
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={copyGroupLink}
+            disabled={groupLink.isPending}
+            title="Copy a shareable invite link for this group"
+            className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium transition-colors disabled:opacity-50"
+          >
+            {copiedGroup ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Link2 className="w-3.5 h-3.5" />}
+            {copiedGroup ? 'Copied' : 'Link'}
+          </button>
+          <button
+            onClick={onInvite}
+            className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium transition-colors"
+          >
+            <UserPlus className="w-3.5 h-3.5" /> Invite
+          </button>
+        </div>
       </div>
       <div className="space-y-1.5">
         {members.map((m) => (

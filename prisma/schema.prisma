@@ -416,6 +416,7 @@ model SplitGroup {
   name        String
   type        String   // 'personal' (friends/outing/trip) | 'business'
   currency    String   @default("INR")
+  simplifyDebts Boolean @default(true) // when false, show direct who-owes-whom instead of minimized transfers
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

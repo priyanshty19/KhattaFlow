@@ -6,6 +6,7 @@ import type {
   CreateExpenseInput,
   CreateSettlementInput,
   CreateCycleInput,
+  UpdateCycleInput,
   UpsertContributionInput,
   CreateInventoryItemInput,
   UpdateInventoryItemInput,
@@ -37,6 +38,7 @@ export interface SplitGroupSummary {
   memberCount: number
   members: { id: string; name: string; status: string }[]
   myNet: number
+  myBreakdown: { name: string; amount: number; owe: boolean }[]
   expenseCount: number
   lastActivity: string
 }
@@ -94,6 +96,7 @@ export interface SplitGroupDetail {
   name: string
   type: 'personal' | 'business'
   currency: string
+  simplifyDebts: boolean
   createdById: string
   myMemberId: string
   myRole: string
@@ -175,6 +178,22 @@ export function useCreateGroup() {
   })
 }
 
+export function useUpdateGroup(groupId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: { name?: string; simplifyDebts?: boolean }) =>
+      fetch(`/api/split/groups/${groupId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(
+        (r) => json<{ id: string; name: string }>(r),
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: splitKeys.group(groupId) })
+      qc.invalidateQueries({ queryKey: splitKeys.groups() })
+      toast.success('Group updated')
+    },
+    onError: () => toast.error('Failed to update group'),
+  })
+}
+
 export function useDeleteGroup() {
   const qc = useQueryClient()
   return useMutation({
@@ -184,6 +203,21 @@ export function useDeleteGroup() {
       toast.success('Group deleted')
     },
     onError: () => toast.error('Failed to delete group'),
+  })
+}
+
+export function useLeaveGroup(groupId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => fetch(`/api/split/groups/${groupId}/leave`, { method: 'POST' }).then(json),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: splitKeys.groups() })
+      toast.success('You left the group')
+    },
+    onError: (e: Error) => {
+      const msg = e.message?.includes('Settle') ? 'Settle up your balance before leaving.' : e.message?.includes('Owners') ? 'Owners must delete the group instead.' : 'Failed to leave group'
+      toast.error(msg)
+    },
   })
 }
 
@@ -211,6 +245,15 @@ export function useMemberInviteLink(groupId: string) {
       fetch(`/api/split/groups/${groupId}/members/${memberId}/invite-link`).then((r) =>
         json<{ inviteUrl: string }>(r),
       ),
+    onError: () => toast.error('Could not get invite link'),
+  })
+}
+
+// Fetch the first-class, shareable group invite link (anyone can join via it).
+export function useGroupInviteLink(groupId: string) {
+  return useMutation({
+    mutationFn: () =>
+      fetch(`/api/split/groups/${groupId}/invite-link`).then((r) => json<{ inviteUrl: string }>(r)),
     onError: () => toast.error('Could not get invite link'),
   })
 }
@@ -309,6 +352,34 @@ export function useCreateCycle(groupId: string) {
       toast.success('Cycle created')
     },
     onError: () => toast.error('Failed to create cycle'),
+  })
+}
+
+export function useUpdateCycle(groupId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ cycleId, data }: { cycleId: string; data: UpdateCycleInput }) =>
+      fetch(`/api/split/groups/${groupId}/cycles/${cycleId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(json),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: splitKeys.cycles(groupId) })
+      qc.invalidateQueries({ queryKey: splitKeys.group(groupId) })
+      toast.success('Cycle updated')
+    },
+    onError: () => toast.error('Failed to update cycle'),
+  })
+}
+
+export function useDeleteCycle(groupId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (cycleId: string) =>
+      fetch(`/api/split/groups/${groupId}/cycles/${cycleId}`, { method: 'DELETE' }).then(json),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: splitKeys.cycles(groupId) })
+      qc.invalidateQueries({ queryKey: splitKeys.group(groupId) })
+      toast.success('Cycle deleted')
+    },
+    onError: () => toast.error('Failed to delete cycle'),
   })
 }
 
