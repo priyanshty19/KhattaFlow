@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getGroupAccess, isOwner } from '@/lib/utils/split-access'
 import { updateGroupSchema } from '@/lib/validations/split'
-import { computeBalances, minimizeSettlements } from '@/lib/engines/split-engine'
+import { computeBalances, minimizeSettlements, applySettlements } from '@/lib/engines/split-engine'
 
 // GET — full group detail: members, expenses, computed balances + suggested transfers.
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
@@ -28,22 +28,17 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   })
   if (!group) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  const balances = computeBalances(
+  const grossBalances = computeBalances(
     group.expenses.map((e) => ({ paidById: e.paidById, shares: e.shares })),
   )
 
-  // Outstanding (unsettled) suggested transfers, net of any recorded settlements.
-  const recorded = group.settlements.filter((s) => s.isSettled)
-  const netAfterSettlements = new Map<string, number>()
-  for (const b of balances) netAfterSettlements.set(b.memberId, b.net)
-  for (const s of recorded) {
-    // payer (from) reduces their debt → net goes up; receiver (to) reduces credit → net goes down
-    netAfterSettlements.set(s.fromMemberId, (netAfterSettlements.get(s.fromMemberId) ?? 0) + s.amount)
-    netAfterSettlements.set(s.toMemberId, (netAfterSettlements.get(s.toMemberId) ?? 0) - s.amount)
-  }
-  const suggestions = minimizeSettlements(
-    Array.from(netAfterSettlements.entries()).map(([memberId, net]) => ({ memberId, net })),
-  )
+  // Net out any recorded (settled) transfers so balances, the home card, and the
+  // settlement suggestions all reflect the same outstanding position.
+  const recorded = group.settlements
+    .filter((s) => s.isSettled)
+    .map((s) => ({ fromMemberId: s.fromMemberId, toMemberId: s.toMemberId, amount: s.amount }))
+  const balances = applySettlements(grossBalances, recorded)
+  const suggestions = minimizeSettlements(balances.map((b) => ({ memberId: b.memberId, net: b.net })))
 
   return NextResponse.json({
     id: group.id,

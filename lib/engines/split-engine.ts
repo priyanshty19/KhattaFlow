@@ -132,6 +132,28 @@ export function computeBalances(expenses: ExpenseForBalance[]): Balance[] {
   })
 }
 
+/**
+ * Apply recorded (settled) cash transfers to a set of balances so the result
+ * reflects the *outstanding* position. A settled transfer of `amount` from
+ * debtor → creditor reduces the debtor's debt (net goes up) and the creditor's
+ * credit (net goes down). `paid`/`owed` are left as the gross expense figures.
+ *
+ * This keeps the displayed balances consistent with `minimizeSettlements`,
+ * which is also computed net of recorded settlements.
+ */
+export function applySettlements(
+  balances: Balance[],
+  settlements: { fromMemberId: string; toMemberId: string; amount: number }[],
+): Balance[] {
+  const netByMember = new Map<string, number>()
+  for (const b of balances) netByMember.set(b.memberId, b.net)
+  for (const s of settlements) {
+    netByMember.set(s.fromMemberId, (netByMember.get(s.fromMemberId) ?? 0) + s.amount)
+    netByMember.set(s.toMemberId, (netByMember.get(s.toMemberId) ?? 0) - s.amount)
+  }
+  return balances.map((b) => ({ ...b, net: netByMember.get(b.memberId) ?? b.net }))
+}
+
 // ── Settlement minimization ──────────────────────────────────────────────────
 
 /**

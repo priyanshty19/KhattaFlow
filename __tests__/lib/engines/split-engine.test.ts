@@ -3,6 +3,7 @@ import {
   computeShares,
   computeBalances,
   minimizeSettlements,
+  applySettlements,
   poolObligations,
   computeContributionStatus,
   type ExpenseForBalance,
@@ -153,6 +154,37 @@ describe('minimizeSettlements', () => {
 
   it('returns nothing when everyone is settled', () => {
     expect(minimizeSettlements([{ memberId: 'a', net: 0 }, { memberId: 'b', net: 0 }])).toEqual([])
+  })
+})
+
+describe('applySettlements', () => {
+  it('zeroes balances once the outstanding debt is settled', () => {
+    const gross = computeBalances([
+      { paidById: 'a', shares: [{ memberId: 'a', amount: 2500 }, { memberId: 'b', amount: 2500 }] },
+    ])
+    // a is owed 2500, b owes 2500
+    expect(gross.find((x) => x.memberId === 'a')?.net).toBe(2500)
+    const net = applySettlements(gross, [{ fromMemberId: 'b', toMemberId: 'a', amount: 2500 }])
+    expect(net.find((x) => x.memberId === 'a')?.net).toBe(0)
+    expect(net.find((x) => x.memberId === 'b')?.net).toBe(0)
+    // and suggestions derived from the netted balances are empty
+    expect(minimizeSettlements(net.map((b) => ({ memberId: b.memberId, net: b.net })))).toEqual([])
+  })
+
+  it('reflects a partial settlement', () => {
+    const gross = computeBalances([
+      { paidById: 'a', shares: [{ memberId: 'a', amount: 5000 }, { memberId: 'b', amount: 5000 }] },
+    ])
+    const net = applySettlements(gross, [{ fromMemberId: 'b', toMemberId: 'a', amount: 2000 }])
+    expect(net.find((x) => x.memberId === 'a')?.net).toBe(3000)
+    expect(net.find((x) => x.memberId === 'b')?.net).toBe(-3000)
+  })
+
+  it('leaves balances untouched when there are no settlements', () => {
+    const gross = computeBalances([
+      { paidById: 'a', shares: [{ memberId: 'a', amount: 1000 }, { memberId: 'b', amount: 1000 }] },
+    ])
+    expect(applySettlements(gross, [])).toEqual(gross)
   })
 })
 

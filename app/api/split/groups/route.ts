@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { ensureUser } from '@/lib/utils/ensure-user'
 import { createGroupSchema } from '@/lib/validations/split'
-import { computeBalances } from '@/lib/engines/split-engine'
+import { computeBalances, applySettlements } from '@/lib/engines/split-engine'
 
 // GET — all groups the caller is an active member of, with their net balance.
 export async function GET() {
@@ -24,6 +24,7 @@ export async function GET() {
     include: {
       members: { select: { id: true, name: true, status: true, userId: true } },
       expenses: { include: { shares: true } },
+      settlements: { where: { isSettled: true }, select: { fromMemberId: true, toMemberId: true, amount: true } },
     },
     orderBy: { updatedAt: 'desc' },
   })
@@ -31,8 +32,9 @@ export async function GET() {
   const myMemberIdByGroup = new Map(memberships.map((m) => [m.groupId, m.id]))
 
   const payload = groups.map((g) => {
-    const balances = computeBalances(
-      g.expenses.map((e) => ({ paidById: e.paidById, shares: e.shares })),
+    const balances = applySettlements(
+      computeBalances(g.expenses.map((e) => ({ paidById: e.paidById, shares: e.shares }))),
+      g.settlements,
     )
     const myMemberId = myMemberIdByGroup.get(g.id)
     const myNet = balances.find((b) => b.memberId === myMemberId)?.net ?? 0
