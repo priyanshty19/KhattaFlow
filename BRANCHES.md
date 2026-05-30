@@ -4,6 +4,7 @@ Full history of every branch created, updated, and merged in this repo.
 
 | Date | Branch | Event | Actor | PR | Notes |
 |------|--------|-------|-------|----|-------|
+| 2026-05-30 | `feat/split-share` | 📤 Pushed | @priyanshty19 | — | — |
 | 2026-05-29 | `fix/goals-wizard-flow` | 🚀 Merged | @priyanshty19 | [#22](https://github.com/priyanshty19/fingrid/pull/22) | [FIX] Goals Wizard Flow |
 | 2026-05-29 | `fix/goals-wizard-flow` | 🔀 PR Opened | @priyanshty19 | [#23](https://github.com/priyanshty19/fingrid/pull/23) | fix(goals): keep first-time wizard from collapsing into dashboard mid-flow |
 | 2026-05-29 | `fix/goals-wizard-flow` | ✅ Created | @priyanshty19 | — | — |
