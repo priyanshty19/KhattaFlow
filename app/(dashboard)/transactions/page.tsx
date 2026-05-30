@@ -5,6 +5,7 @@ import { Plus } from 'lucide-react'
 import { TransactionList } from '@/components/domain/transactions/TransactionList'
 import { TransactionFilter } from '@/components/domain/transactions/TransactionFilter'
 import { TopBar } from '@/components/layout/TopBar'
+import { MoneyTabs } from '@/components/layout/MoneyTabs'
 import { getCurrentMonth } from '@/lib/utils/date'
 import { useUIStore } from '@/stores/ui.store'
 
@@ -36,7 +37,8 @@ export default function TransactionsPage() {
           </button>
         }
       />
-      <div className="px-4 md:px-6 lg:px-8 py-4 md:py-6 space-y-4 md:space-y-5 max-w-[1200px]">
+      <div className="px-4 md:px-6 lg:px-8 py-4 md:py-6 space-y-4 md:space-y-5 max-w-[1200px] mx-auto w-full">
+        <MoneyTabs />
         <TransactionFilter value={filter} onChange={setFilter} />
         <TransactionList month={month} filter={filter} />
       </div>

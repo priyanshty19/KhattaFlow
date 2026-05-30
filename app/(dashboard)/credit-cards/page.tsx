@@ -28,6 +28,7 @@ export default function CreditCardsPage() {
     <>
       <TopBar
         title="Credit Cards"
+        showQuickAdd={false}
         actions={
           <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full border border-emerald-500/20 bg-emerald-500/5">
             <span className="text-[10px] uppercase tracking-wider text-emerald-500/70 font-bold">Powered by</span>
@@ -57,7 +58,7 @@ export default function CreditCardsPage() {
       </div>
 
       {/* Tab content */}
-      <div className="px-4 md:px-8 py-4 md:py-6 max-w-[1400px]">
+      <div className="px-4 md:px-8 py-4 md:py-6 max-w-[1400px] mx-auto w-full">
         {activeTab === 'recommender' && (
           <RecommenderTab prefillIncome={prefillIncome} prefillCreditScore={prefillCreditScore} />
         )}

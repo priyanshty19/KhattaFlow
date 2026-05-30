@@ -14,7 +14,7 @@ export default function DashboardPage() {
   return (
     <>
       <TopBar title="Overview" month={month} onMonthChange={setMonth} />
-      <div className="flex flex-col gap-4 md:gap-8 px-4 md:px-6 lg:px-8 py-4 md:py-6 max-w-[1400px]">
+      <div className="flex flex-col gap-4 md:gap-8 px-4 md:px-6 lg:px-8 py-4 md:py-6 max-w-[1400px] mx-auto w-full">
         <Suspense fallback={<StatCardSkeleton />}>
           <DashboardPulse month={month} />
         </Suspense>

@@ -2,21 +2,42 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, ArrowLeftRight, PieChart, Target,
+  Home, ArrowLeftRight, PieChart, Target,
   CreditCard, Settings, Plus, Upload, Wallet, Rocket, Users,
 } from 'lucide-react'
 import { UserButton } from '@clerk/nextjs'
 import { cn } from '@/lib/utils/cn'
 import { useUIStore } from '@/stores/ui.store'
 
-const NAV_ITEMS: { href: string; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { href: '/',              label: 'Dashboard',    icon: LayoutDashboard },
-  { href: '/transactions',  label: 'Transactions', icon: ArrowLeftRight },
-  { href: '/analytics',     label: 'Analytics',    icon: PieChart },
-  { href: '/budgets',       label: 'Budget',       icon: Target },
-  { href: '/goals',         label: 'Goals',        icon: Rocket },
-  { href: '/split',         label: 'Split & Share', icon: Users },
-  { href: '/credit-cards',  label: 'Credit Cards', icon: CreditCard },
+type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }> }
+
+// Grouped nav: light section labels surface the product's pillars without burying any
+// destination — every leaf stays directly clickable on desktop (intentional asymmetry
+// vs. mobile, where MONEY collapses into a bottom-tab + segmented sub-nav).
+const NAV_GROUPS: { label: string | null; items: NavItem[] }[] = [
+  {
+    label: null,
+    items: [{ href: '/', label: 'Home', icon: Home }],
+  },
+  {
+    label: 'Money',
+    items: [
+      { href: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
+      { href: '/analytics',    label: 'Analytics',    icon: PieChart },
+      { href: '/budgets',      label: 'Budget',       icon: Target },
+    ],
+  },
+  {
+    label: 'Grow',
+    items: [
+      { href: '/goals',        label: 'Goals',        icon: Rocket },
+      { href: '/credit-cards', label: 'Credit Cards', icon: CreditCard },
+    ],
+  },
+  {
+    label: null,
+    items: [{ href: '/split', label: 'Split & Share', icon: Users }],
+  },
 ]
 
 const BOTTOM_ITEMS: { href: string; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -39,25 +60,34 @@ export function Sidebar() {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 space-y-0.5">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-          const isActive = pathname === href
-          return (
-            <Link
-              key={href}
-              href={href as any}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150',
-                isActive
-                  ? 'bg-emerald-500/10 text-emerald-400 font-semibold border-r-2 border-emerald-400'
-                  : 'text-zinc-300 hover:bg-zinc-800/60 hover:text-zinc-100 font-medium'
-              )}
-            >
-              <Icon className="w-4 h-4 shrink-0" />
-              <span>{label}</span>
-            </Link>
-          )
-        })}
+      <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto custom-scroll">
+        {NAV_GROUPS.map((group, gi) => (
+          <div key={group.label ?? `group-${gi}`} className={cn(gi > 0 && 'pt-3')}>
+            {group.label && (
+              <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-600">
+                {group.label}
+              </p>
+            )}
+            {group.items.map(({ href, label, icon: Icon }) => {
+              const isActive = pathname === href
+              return (
+                <Link
+                  key={href}
+                  href={href as any}
+                  className={cn(
+                    'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150',
+                    isActive
+                      ? 'bg-emerald-500/10 text-emerald-400 font-semibold border-r-2 border-emerald-400'
+                      : 'text-zinc-300 hover:bg-zinc-800/60 hover:text-zinc-100 font-medium'
+                  )}
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span>{label}</span>
+                </Link>
+              )
+            })}
+          </div>
+        ))}
       </nav>
 
       {/* Bottom section */}

@@ -89,18 +89,8 @@ export default function SplitPage() {
 
   return (
     <>
-      <TopBar
-        title="Split & Share"
-        actions={
-          <button
-            onClick={() => setCreateOpen(true)}
-            className="hidden md:inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-sm font-semibold transition-colors"
-          >
-            <Plus className="w-4 h-4" /> New group
-          </button>
-        }
-      />
-      <div className="px-4 md:px-6 lg:px-8 py-4 md:py-6 max-w-[1200px]">
+      <TopBar title="Split & Share" showQuickAdd={false} />
+      <div className="px-4 md:px-6 lg:px-8 py-4 md:py-6 max-w-[1200px] mx-auto w-full">
         {/* Overall position across all groups */}
         {!isLoading && groups.length > 0 && (
           <div className="mb-5 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4 md:p-5">
@@ -129,9 +119,19 @@ export default function SplitPage() {
           </div>
         )}
 
-        <div className="mb-5">
-          <h2 className="text-lg md:text-xl font-semibold text-zinc-100">Your groups</h2>
-          <p className="text-sm text-zinc-400 mt-0.5">Split expenses with friends or track a business budget.</p>
+        <div className="mb-5 flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-lg md:text-xl font-semibold text-zinc-100">Your groups</h2>
+            <p className="text-sm text-zinc-400 mt-0.5">Split expenses with friends or track a business budget.</p>
+          </div>
+          {groups.length > 0 && (
+            <button
+              onClick={() => setCreateOpen(true)}
+              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-sm font-semibold shrink-0 transition-colors active:scale-95"
+            >
+              <Plus className="w-4 h-4" /> New group
+            </button>
+          )}
         </div>
 
         {isLoading ? (

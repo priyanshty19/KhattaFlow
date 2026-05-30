@@ -25,8 +25,8 @@ export default function GroupDetailPage() {
   if (isLoading || !group) {
     return (
       <>
-        <TopBar title="Group" />
-        <div className="px-4 md:px-6 lg:px-8 py-6 max-w-[1100px] space-y-3">
+        <TopBar title="Group" showQuickAdd={false} />
+        <div className="px-4 md:px-6 lg:px-8 py-6 max-w-[1100px] mx-auto w-full space-y-3">
           <div className="h-24 rounded-2xl bg-zinc-900/60 border border-zinc-800/50 animate-pulse" />
           <div className="h-48 rounded-2xl bg-zinc-900/60 border border-zinc-800/50 animate-pulse" />
         </div>
@@ -38,6 +38,7 @@ export default function GroupDetailPage() {
     <>
       <TopBar
         title={group.name}
+        showQuickAdd={false}
         actions={
           <button
             onClick={() => setAddOpen(true)}
@@ -47,7 +48,7 @@ export default function GroupDetailPage() {
           </button>
         }
       />
-      <div className="px-4 md:px-6 lg:px-8 py-4 md:py-6 max-w-[1100px]">
+      <div className="px-4 md:px-6 lg:px-8 py-4 md:py-6 max-w-[1100px] mx-auto w-full">
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={() => router.push('/split' as any)}

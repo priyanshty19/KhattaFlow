@@ -6,6 +6,7 @@ import { SpendingTrendChart } from '@/components/domain/analytics/SpendingTrendC
 import { CategoryBreakdownChart } from '@/components/domain/analytics/CategoryBreakdownChart'
 import { SavingsRateChart } from '@/components/domain/analytics/SavingsRateChart'
 import { InvestmentAllocationChart } from '@/components/domain/analytics/InvestmentAllocationChart'
+import { MoneyTabs } from '@/components/layout/MoneyTabs'
 import { getCurrentMonth } from '@/lib/utils/date'
 
 export default function AnalyticsPage() {
@@ -14,7 +15,8 @@ export default function AnalyticsPage() {
   return (
     <>
       <TopBar title="Analytics" month={month} onMonthChange={setMonth} />
-      <div className="flex flex-col gap-4 md:gap-6 px-4 md:px-6 lg:px-8 py-4 md:py-6 max-w-[1400px]">
+      <div className="flex flex-col gap-4 md:gap-6 px-4 md:px-6 lg:px-8 py-4 md:py-6 max-w-[1400px] mx-auto w-full">
+        <MoneyTabs />
         <div>
           <h2 className="text-lg md:text-xl font-semibold text-zinc-100">Analytics</h2>
           <p className="text-sm text-zinc-400 mt-0.5">Patterns in your spending, visible at a glance.</p>
