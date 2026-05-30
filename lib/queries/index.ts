@@ -27,6 +27,28 @@ export function useAnalyticsTrends(months = 6) {
   })
 }
 
+// ── Net Worth (proxy v1) ─────────────────────────────────────────────────────
+
+export interface NetWorthResponse {
+  netWorth: number
+  cumulativeSavings: number
+  investedCorpus: number
+  monthsTracked: number
+  series: { month: string; value: number }[]
+}
+
+export function useNetWorth() {
+  return useQuery({
+    queryKey: ['networth'],
+    queryFn: async (): Promise<NetWorthResponse> => {
+      const res = await fetch('/api/networth')
+      if (!res.ok) throw new Error('Failed to fetch net worth')
+      return res.json()
+    },
+    staleTime: 1000 * 60 * 5,
+  })
+}
+
 // ── Budgets ───────────────────────────────────────────────────────────────
 
 export function useBudgets(month: string) {
