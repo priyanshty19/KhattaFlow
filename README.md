@@ -8,6 +8,30 @@ FinGrid is a full-stack Next.js application that brings together transaction tra
 
 ## Recent Updates
 
+### May 31, 2026 — Launch hardening, Split member management & UI polish
+
+**New feature — Split member management**
+- Group owners can now **remove members** from any group type (Friends / Outing / Trip / Business) — owner-gated remove button in `components/domain/split/MemberList.tsx`, wired to `useRemoveMember`
+- Invite emails now report **honest delivery status**: `sendSplitInviteEmail` returns whether Resend actually sent (no more "Mail sent" when no `RESEND_API_KEY` is configured). The invite modal shows a copyable invite link as a fallback so members can always be added
+- Per-invite rate limit added (15 / min per user) to curb spam once Resend is live
+
+**New feature — Privacy, Terms & Cookie Policy (legal/compliance)**
+- New in-app **Policy tab under Settings** (`/settings/policy`) with three sections — Privacy Policy, Terms of Service, Cookie Policy — tailored to what FinGrid actually does (Clerk identity, Supabase `ap-south-1`, Gemini AI processing, Gmail OAuth, Resend email; strictly-necessary cookies only)
+- Dismissible, non-blocking **Cookie Consent banner** (`components/shared/CookieConsent.tsx`) — choice persisted in `localStorage`, links to the Policy tab
+- **GDPR right to erasure**: the Clerk webhook now handles `user.deleted` by deleting the DB `User` row, cascading all owned data (transactions, budgets, goals, split memberships, notifications)
+
+**Security / audit hardening** (additive, fail-open — no behaviour change)
+- **Security headers** in `next.config.js`: `Strict-Transport-Security` (HSTS w/ preload), `X-Frame-Options: DENY` + CSP `frame-ancestors 'none'` (clickjacking), `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (camera/mic/geolocation/FLoC off)
+- **Rate limiting** — dependency-free in-memory sliding-window limiter (`lib/utils/rate-limit.ts`, keyed by Clerk userId or IP, **fails open**), applied to hot routes: OTP send/verify (brute-force + SMS/email abuse), Gemini-backed insights / goal recommendations / financial-fetch (cost control), and split invites. Interface is Upstash-swappable for distributed limits later
+- 6 new Vitest cases for the limiter (now **214 tests** total)
+
+**UI / UX fixes**
+- **Desktop Profile hub** — Privacy & Terms (and the rest of the hub) were mobile-only; added a **Profile** entry to the desktop Sidebar and removed the now-redundant Sync Transactions / Settings / Account rows (all reachable inside the hub)
+- **Clickable account card** — the Profile account card now opens Clerk account management on click (mobile + desktop); the avatar still opens its own menu for sign-out
+- **Gmail onboarding scan is now one-shot** — it was re-triggering "at random times" because an empty scan never marked itself done; now it fires exactly once per device at onboarding, and all rescans are manual via the Sync Transactions (Fetch) section
+- **Budget toggle centered** — the Monthly/Planner pill was a block-level `flex` (full-width dark background); switched to `inline-flex` and centered it
+- Dashboard heading rename + TopBar declutter; budget view switch relocated so it no longer overlaps the header
+
 ### May 2026 (latest)
 
 **Production launch — `myfingrid.com`**
