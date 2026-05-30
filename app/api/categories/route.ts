@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { rekeyUserByEmail } from '@/lib/services/user-keying'
 import { DEFAULT_CATEGORIES } from '@/constants/categories'
 
 export async function GET(_req: Request) {
@@ -12,22 +13,39 @@ export async function GET(_req: Request) {
   // Count only non-deleted categories — this is what the user actually sees
   const existing = await prisma.category.count({ where: { userId, deletedAt: null } })
   if (existing === 0) {
-    const clerkUser = await currentUser()
-    const email = clerkUser?.emailAddresses[0]?.emailAddress ?? ''
-    // Do NOT delete old user records here — they may have real transaction data.
-    // Migration is handled safely in the onboarding route.
-    await prisma.user.upsert({
-      where: { id: userId },
-      create: { id: userId, email, name: clerkUser?.fullName ?? null, savingsGoalPct: 0.20 },
-      update: {},
-    })
+    // Wrap the whole seed branch defensively so a transient/edge failure here can
+    // never 500 the categories endpoint — worst case the user gets an empty list
+    // and the next request retries.
     try {
-      await prisma.category.createMany({
-        data: DEFAULT_CATEGORIES.map(c => ({ ...c, userId, type: c.type as any })),
-        skipDuplicates: true,
+      const clerkUser = await currentUser()
+      const email = clerkUser?.emailAddresses[0]?.emailAddress ?? ''
+
+      // If a prior Clerk user shares this email (dev→prod switch, account re-creation),
+      // re-key their data onto the current userId instead of colliding on User.email
+      // (@unique). This both fixes the historical 500 and restores the user's real data.
+      await rekeyUserByEmail({ userId, email })
+
+      // Ensure the current user row exists. After re-keying there is no email collision,
+      // so this upsert is safe.
+      await prisma.user.upsert({
+        where: { id: userId },
+        create: { id: userId, email, name: clerkUser?.fullName ?? null, savingsGoalPct: 0.20 },
+        update: {},
       })
+
+      // ALWAYS re-count live categories before deciding to seed. The user may already
+      // have categories from a re-key OR from a concurrent onboarding write that renamed
+      // their row first. Seeding defaults only when genuinely empty prevents clobbering
+      // an onboarding selection (the "showed last time's selection" bug).
+      const liveCount = await prisma.category.count({ where: { userId, deletedAt: null } })
+      if (liveCount === 0) {
+        await prisma.category.createMany({
+          data: DEFAULT_CATEGORIES.map(c => ({ ...c, userId, type: c.type as any })),
+          skipDuplicates: true,
+        })
+      }
     } catch (e) {
-      console.error('[categories auto-seed] createMany failed:', e)
+      console.error('[categories auto-seed] failed:', e)
     }
   } else {
     // One-time migration: backfill groups only for system/default categories that

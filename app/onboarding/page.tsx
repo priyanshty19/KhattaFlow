@@ -62,6 +62,7 @@ export default function OnboardingPage() {
   // Track by NAME (stable) not slug (has timestamp — changes when profile/incomeName change)
   const [deselectedNames, setDeselectedNames] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const stepIndex = STEPS.indexOf(step)
 
@@ -95,10 +96,11 @@ export default function OnboardingPage() {
   const handleFinish = async () => {
     setStep('setup')
     setLoading(true)
+    setSubmitError(null)
     try {
       // Filter by name (stable) — immune to slug timestamp changes from navigation
       const selected: CategoryTemplate[] = categories.filter(c => !deselectedNames.has(c.name))
-      await fetch('/api/onboarding', {
+      const res = await fetch('/api/onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -110,10 +112,22 @@ export default function OnboardingPage() {
           creditScore,
         }),
       })
+      // fetch does NOT throw on HTTP errors — check explicitly so a failed
+      // onboarding surfaces instead of silently showing "done" with stale data.
+      if (!res.ok) {
+        const detail = await res.text().catch(() => '')
+        throw new Error(`Setup failed (HTTP ${res.status})${detail ? `: ${detail.slice(0, 200)}` : ''}`)
+      }
       setStep('done')
       setTimeout(() => router.push('/'), 3000)
     } catch (e) {
-      console.error(e)
+      console.error('[onboarding] submit failed:', e)
+      setSubmitError(
+        e instanceof Error && e.message
+          ? e.message
+          : 'Something went wrong setting up your account. Please try again.'
+      )
+      setStep('preview')
     } finally {
       setLoading(false)
     }
@@ -495,14 +509,19 @@ export default function OnboardingPage() {
                 </div>
               ))}
             </div>
+            {submitError && (
+              <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-sm text-red-300">
+                {submitError}
+              </div>
+            )}
             <div className="flex gap-3">
               <button onClick={() => goTo('investment')} className="px-5 py-3 border border-zinc-800 text-zinc-400 hover:text-zinc-200 rounded-xl text-sm transition-colors">Back</button>
               <button
                 onClick={handleFinish}
-                disabled={activeSlugs.size === 0}
+                disabled={activeSlugs.size === 0 || loading}
                 className="flex-1 flex items-center justify-center gap-2 py-3 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-zinc-950 rounded-xl font-semibold transition-all active:scale-95"
               >
-                Set up my account <ChevronRight className="w-4 h-4" />
+                {submitError ? 'Try again' : 'Set up my account'} <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </motion.div>
