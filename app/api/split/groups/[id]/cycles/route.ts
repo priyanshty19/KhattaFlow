@@ -33,6 +33,9 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
         startDate: c.startDate,
         endDate: c.endDate,
         totalBudget: c.totalBudget,
+        bufferAmount: c.bufferAmount,
+        notes: c.notes,
+        allocations: (c.allocations as { category: string; amount: number }[] | null) ?? [],
         status: c.status,
         spent,
         contributed,
@@ -60,13 +63,22 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   const parsed = createCycleSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
 
+  // Derive the total from allocations + buffer when not explicitly provided.
+  const allocations = parsed.data.allocations?.filter((a) => a.amount > 0) ?? []
+  const allocTotal = allocations.reduce((s, a) => s + a.amount, 0)
+  const buffer = parsed.data.bufferAmount ?? 0
+  const totalBudget = parsed.data.totalBudget ?? allocTotal + buffer
+
   const cycle = await prisma.splitBudgetCycle.create({
     data: {
       groupId: params.id,
       name: parsed.data.name,
       startDate: new Date(parsed.data.startDate),
       endDate: new Date(parsed.data.endDate),
-      totalBudget: parsed.data.totalBudget ?? 0,
+      totalBudget,
+      bufferAmount: buffer,
+      notes: parsed.data.notes ?? null,
+      allocations: allocations.length ? allocations : undefined,
       status: parsed.data.status ?? 'active',
     },
   })

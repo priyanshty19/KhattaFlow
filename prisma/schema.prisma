@@ -530,7 +530,10 @@ model SplitBudgetCycle {
   name        String
   startDate   DateTime @db.Date
   endDate     DateTime @db.Date
-  totalBudget Int      @default(0) // planned, paise
+  totalBudget Int      @default(0) // planned total = allocations + buffer, paise
+  bufferAmount Int     @default(0) // reserve held back, paise
+  notes       String?
+  allocations Json? // [{ category, amount }] per-category planned budget, paise
   status      String   @default("active") // draft | active | completed
   createdAt   DateTime @default(now())
 

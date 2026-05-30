@@ -104,12 +104,20 @@ export interface SplitGroupDetail {
   settlements: SettlementDTO[]
 }
 
+export interface CycleAllocationDTO {
+  category: string
+  amount: number
+}
+
 export interface CycleDTO {
   id: string
   name: string
   startDate: string
   endDate: string
   totalBudget: number
+  bufferAmount: number
+  notes: string | null
+  allocations: CycleAllocationDTO[]
   status: string
   spent: number
   contributed: number

@@ -71,11 +71,19 @@ export const updateSettlementSchema = z.object({
 
 // ── Business: cycles & contributions ───────────────────────────────────────────
 
+const cycleAllocationSchema = z.object({
+  category: z.string().min(1).max(40),
+  amount: z.number().int().min(0),
+})
+
 export const createCycleSchema = z.object({
   name: z.string().min(1).max(80),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   totalBudget: z.number().int().min(0).optional(),
+  bufferAmount: z.number().int().min(0).optional(),
+  notes: z.string().max(500).optional(),
+  allocations: z.array(cycleAllocationSchema).optional(),
   status: z.enum(['draft', 'active', 'completed']).optional(),
 })
 
@@ -84,6 +92,9 @@ export const updateCycleSchema = z.object({
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   totalBudget: z.number().int().min(0).optional(),
+  bufferAmount: z.number().int().min(0).optional(),
+  notes: z.string().max(500).optional(),
+  allocations: z.array(cycleAllocationSchema).optional(),
   status: z.enum(['draft', 'active', 'completed']).optional(),
 })
 
