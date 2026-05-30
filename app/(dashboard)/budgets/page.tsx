@@ -49,13 +49,14 @@ export default function BudgetsPage() {
         title="Budget"
         month={view === 'monthly' ? month : undefined}
         onMonthChange={view === 'monthly' ? setMonth : undefined}
-        actions={toggle}
         maxWidth="max-w-[1200px]"
       />
       <div className="px-4 md:px-6 lg:px-8 py-4 md:py-6 max-w-[1200px] mx-auto w-full">
         <div className="md:hidden mb-4">
           <MoneyTabs />
         </div>
+        {/* Monthly / Planner view switch — sits above the heading (was overlapping the header logo) */}
+        <div className="mb-4">{toggle}</div>
         <div className="mb-4 md:mb-6">
           <h2 className="text-lg md:text-xl font-semibold text-zinc-100">Budget</h2>
           <p className="text-sm text-zinc-400 mt-0.5">
