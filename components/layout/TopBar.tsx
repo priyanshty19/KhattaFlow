@@ -18,48 +18,57 @@ interface TopBarProps {
    * instead of a misleading global "+".
    */
   showQuickAdd?: boolean
+  /**
+   * Tailwind max-width class for the bar's inner content, so the title/actions row
+   * centers on the SAME width box as the page body below it (otherwise the title sits
+   * flush-left of centered content on wide monitors). Pass the value matching the
+   * page container. Defaults to the dashboard width.
+   */
+  maxWidth?: string
   className?: string
 }
 
-export function TopBar({ title, month, onMonthChange, actions, showQuickAdd = true, className }: TopBarProps) {
+export function TopBar({ title, month, onMonthChange, actions, showQuickAdd = true, maxWidth = 'max-w-[1400px]', className }: TopBarProps) {
   const { openQuickAdd } = useUIStore()
   return (
     <header className={cn(
-      'sticky top-0 z-30 flex items-center justify-between h-14 px-4 md:px-8',
+      'sticky top-0 z-30 h-14 px-4 md:px-8',
       'bg-zinc-950/80 backdrop-blur-md border-b border-zinc-600/40',
       className
     )}>
-      {/* Left: logo (mobile) + title + month */}
-      <div className="flex items-center gap-2 md:gap-4 min-w-0">
-        {/* FinGrid logo — mobile only */}
-        <div className="flex md:hidden items-center gap-1.5 shrink-0">
-          <div className="w-6 h-6 rounded-md bg-emerald-500 flex items-center justify-center">
-            <Wallet className="w-3.5 h-3.5 text-white" />
+      <div className={cn('flex items-center justify-between h-full w-full mx-auto', maxWidth)}>
+        {/* Left: logo (mobile) + title + month */}
+        <div className="flex items-center gap-2 md:gap-4 min-w-0">
+          {/* FinGrid logo — mobile only */}
+          <div className="flex md:hidden items-center gap-1.5 shrink-0">
+            <div className="w-6 h-6 rounded-md bg-emerald-500 flex items-center justify-center">
+              <Wallet className="w-3.5 h-3.5 text-white" />
+            </div>
+            <span className="font-bold text-sm text-emerald-400 tracking-tight">FinGrid</span>
           </div>
-          <span className="font-bold text-sm text-emerald-400 tracking-tight">FinGrid</span>
+          {/* Page title — desktop only */}
+          <h1 className="hidden md:block font-semibold text-base text-emerald-400 tracking-tight shrink-0">{title}</h1>
+          {month && onMonthChange && (
+            <MonthSelector value={month} onChange={onMonthChange} />
+          )}
         </div>
-        {/* Page title — desktop only */}
-        <h1 className="hidden md:block font-semibold text-base text-emerald-400 tracking-tight shrink-0">{title}</h1>
-        {month && onMonthChange && (
-          <MonthSelector value={month} onChange={onMonthChange} />
-        )}
-      </div>
 
-      {/* Right: actions + quick-add (mobile) + bell + user */}
-      <div className="flex items-center gap-2 md:gap-3">
-        {actions}
-        {/* Quick-add FAB — mobile only, contextual */}
-        {showQuickAdd && (
-          <button
-            onClick={() => openQuickAdd()}
-            className="md:hidden flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-zinc-950 transition-colors active:scale-95"
-            aria-label="Add transaction"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
-        )}
-        <NotificationCenter />
-        <UserButton />
+        {/* Right: actions + quick-add (mobile) + bell + user */}
+        <div className="flex items-center gap-2 md:gap-3">
+          {actions}
+          {/* Quick-add FAB — mobile only, contextual */}
+          {showQuickAdd && (
+            <button
+              onClick={() => openQuickAdd()}
+              className="md:hidden flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-zinc-950 transition-colors active:scale-95"
+              aria-label="Add transaction"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          )}
+          <NotificationCenter />
+          <UserButton />
+        </div>
       </div>
     </header>
   )

@@ -50,6 +50,7 @@ export default function BudgetsPage() {
         month={view === 'monthly' ? month : undefined}
         onMonthChange={view === 'monthly' ? setMonth : undefined}
         actions={toggle}
+        maxWidth="max-w-[1200px]"
       />
       <div className="px-4 md:px-6 lg:px-8 py-4 md:py-6 max-w-[1200px] mx-auto w-full">
         <div className="md:hidden mb-4">

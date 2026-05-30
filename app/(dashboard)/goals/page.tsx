@@ -5,7 +5,7 @@ import { GoalsAchieverFlow } from '@/components/domain/goals/GoalsAchieverFlow'
 export default function GoalsPage() {
   return (
     <>
-      <TopBar title="Goals" showQuickAdd={false} />
+      <TopBar title="Goals" showQuickAdd={false} maxWidth="max-w-[1200px]" />
       <div className="px-4 md:px-6 lg:px-8 py-4 md:py-6 max-w-[1200px] mx-auto w-full">
         <div className="mb-4 md:mb-6">
           <h2 className="text-lg md:text-xl font-semibold text-zinc-100">Goals Achiever</h2>

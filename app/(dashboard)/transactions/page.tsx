@@ -36,6 +36,7 @@ export default function TransactionsPage() {
             Add Transaction
           </button>
         }
+        maxWidth="max-w-[1200px]"
       />
       <div className="px-4 md:px-6 lg:px-8 py-4 md:py-6 space-y-4 md:space-y-5 max-w-[1200px] mx-auto w-full">
         <MoneyTabs />

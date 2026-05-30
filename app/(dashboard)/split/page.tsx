@@ -89,7 +89,7 @@ export default function SplitPage() {
 
   return (
     <>
-      <TopBar title="Split & Share" showQuickAdd={false} />
+      <TopBar title="Split & Share" showQuickAdd={false} maxWidth="max-w-[1200px]" />
       <div className="px-4 md:px-6 lg:px-8 py-4 md:py-6 max-w-[1200px] mx-auto w-full">
         {/* Overall position across all groups */}
         {!isLoading && groups.length > 0 && (
