@@ -1,0 +1,15 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- myFinGrid · Concept 4 — App icon -->
+  <defs>
+    <linearGradient id="g4t" x1="0" y1="0" x2="128" y2="128" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10b981"/>
+      <stop offset="1" stop-color="#047857"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="30" fill="url(#g4t)"/>
+  <g stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M36 94 L64 72 L92 94" opacity="0.40"/>
+    <path d="M36 72 L64 50 L92 72" opacity="0.70"/>
+    <path d="M36 50 L64 28 L92 50"/>
+  </g>
+</svg>

@@ -1,0 +1,19 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- myFinGrid · Concept 1 — App icon (rounded tile) -->
+  <defs>
+    <linearGradient id="g1t" x1="0" y1="0" x2="128" y2="128" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10b981"/>
+      <stop offset="1" stop-color="#047857"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="30" fill="url(#g1t)"/>
+  <g fill="#ffffff" opacity="0.30">
+    <circle cx="40" cy="40" r="3.4"/><circle cx="64" cy="40" r="3.4"/><circle cx="88" cy="40" r="3.4"/>
+    <circle cx="40" cy="64" r="3.4"/><circle cx="88" cy="64" r="3.4"/>
+    <circle cx="40" cy="88" r="3.4"/><circle cx="64" cy="88" r="3.4"/><circle cx="88" cy="88" r="3.4"/>
+  </g>
+  <path d="M40 88 L64 64 L88 40" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#ffffff">
+    <circle cx="40" cy="88" r="7.5"/><circle cx="64" cy="64" r="7.5"/><circle cx="88" cy="40" r="7.5"/>
+  </g>
+</svg>

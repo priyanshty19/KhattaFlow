@@ -2,8 +2,9 @@
 // Public invite landing — reachable when logged out (see middleware public matcher).
 import Link from 'next/link'
 import { auth } from '@clerk/nextjs/server'
-import { Users, Wallet } from 'lucide-react'
+import { Users } from 'lucide-react'
 import { prisma } from '@/lib/prisma'
+import { Logo } from '@/components/shared/Logo'
 import { InviteAccept } from './InviteAccept'
 
 export const dynamic = 'force-dynamic'
@@ -35,11 +36,8 @@ export default async function InvitePage({ params }: { params: { token: string }
         style={{ background: 'radial-gradient(ellipse 100% 60% at 50% 0%, rgba(16,185,129,0.10) 0%, transparent 65%)' }}
       />
       <div className="relative z-10 w-full max-w-md">
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center">
-            <Wallet className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-bold text-lg text-emerald-400 tracking-tight">FinGrid</span>
+        <div className="flex items-center justify-center mb-8">
+          <Logo size="lg" href={null} />
         </div>
         <div className="rounded-2xl border border-zinc-800/70 bg-zinc-900/80 backdrop-blur-sm p-8">
           {children}

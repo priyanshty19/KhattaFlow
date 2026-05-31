@@ -1,8 +1,8 @@
-# FinGrid
+# myFinGrid
 
 > Personal finance dashboard built for India — track every rupee, plan your savings, and find the best credit card for your spending pattern.
 
-FinGrid is a full-stack Next.js application that brings together transaction tracking, budget planning, spending analytics, and an AI-powered credit card recommender (CredWise) in a single dark-themed dashboard.
+myFinGrid is a full-stack Next.js application that brings together transaction tracking, budget planning, spending analytics, and an AI-powered credit card recommender (CredWise) in a single dark-themed dashboard.
 
 ---
 
@@ -16,7 +16,7 @@ FinGrid is a full-stack Next.js application that brings together transaction tra
 - Per-invite rate limit added (15 / min per user) to curb spam once Resend is live
 
 **New feature — Privacy, Terms & Cookie Policy (legal/compliance)**
-- New in-app **Policy tab under Settings** (`/settings/policy`) with three sections — Privacy Policy, Terms of Service, Cookie Policy — tailored to what FinGrid actually does (Clerk identity, Supabase `ap-south-1`, Gemini AI processing, Gmail OAuth, Resend email; strictly-necessary cookies only)
+- New in-app **Policy tab under Settings** (`/settings/policy`) with three sections — Privacy Policy, Terms of Service, Cookie Policy — tailored to what myFinGrid actually does (Clerk identity, Supabase `ap-south-1`, Gemini AI processing, Gmail OAuth, Resend email; strictly-necessary cookies only)
 - Dismissible, non-blocking **Cookie Consent banner** (`components/shared/CookieConsent.tsx`) — choice persisted in `localStorage`, links to the Policy tab
 - **GDPR right to erasure**: the Clerk webhook now handles `user.deleted` by deleting the DB `User` row, cascading all owned data (transactions, budgets, goals, split memberships, notifications)
 
@@ -47,7 +47,7 @@ FinGrid is a full-stack Next.js application that brings together transaction tra
 - `/api/financial-fetch/execute` runs the extraction job; `/api/financial-fetch/prompt-status` polls LLM progress
 - `lib/engines/financial-email-parser.ts` — regex + LLM hybrid parser for Indian bank transaction emails (15+ banks)
 - `lib/engines/merchant-category-rules.ts` — rule-based merchant-to-category mapper (auto-categorises Amazon, Swiggy, Zomato, Uber, etc.)
-- `lib/utils/email-auto-assign.ts` — assigns parsed transactions to existing FinGrid categories by merchant rules + keyword matching
+- `lib/utils/email-auto-assign.ts` — assigns parsed transactions to existing myFinGrid categories by merchant rules + keyword matching
 - `components/domain/dashboard/GmailOnboardModal.tsx` — first-time Gmail connection modal surfaced on dashboard for users who haven't linked Gmail yet
 - `components/domain/import/FinancialFetchFlow.tsx` — new import tab for AI-powered email fetch with progress UI
 - `scripts/debug-email-parser.ts` — local debugging script to test parser against raw email payloads
@@ -70,7 +70,7 @@ FinGrid is a full-stack Next.js application that brings together transaction tra
 
 **Redesigned Auth Pages — fully responsive**
 - Sign-in and sign-up pages replaced with a split-screen layout
-- **Desktop**: Left panel — FinGrid logo, tagline, 3 mock ₹ stat cards (income, savings, Gemini AI insight chip), CredWise chip; Right panel — Clerk widget
+- **Desktop**: Left panel — myFinGrid logo, tagline, 3 mock ₹ stat cards (income, savings, Gemini AI insight chip), CredWise chip; Right panel — Clerk widget
 - **Mobile**: Compact brand banner (logo + tagline + condensed stat chips) stacked above the Clerk form — no content hidden on any screen size
 - Shared `app/(auth)/layout.tsx` shell used by both routes; Clerk appearance tokens keep the form on-brand (emerald + zinc palette)
 
@@ -118,12 +118,12 @@ Full transaction ledger with flexible import options.
 
 | Method | How it works |
 |--------|-------------|
-| **CSV Upload** | Upload a bank statement CSV; the parser maps columns to FinGrid fields and previews rows before import |
-| **Gmail Scan** | Connect Gmail via OAuth; FinGrid scans your inbox for bank transaction emails and extracts debit/credit amounts using the Gmail Parser Engine |
+| **CSV Upload** | Upload a bank statement CSV; the parser maps columns to myFinGrid fields and previews rows before import |
+| **Gmail Scan** | Connect Gmail via OAuth; myFinGrid scans your inbox for bank transaction emails and extracts debit/credit amounts using the Gmail Parser Engine |
 | **Paste SMS** | Copy-paste bank SMS alerts; the SMS Parser Engine extracts amounts, merchant names, and dates automatically |
 
 **Recurring rules**
-- Define a rule (category + amount + frequency) and FinGrid auto-creates future transactions
+- Define a rule (category + amount + frequency) and myFinGrid auto-creates future transactions
 
 ---
 
@@ -214,7 +214,7 @@ Accessible from Settings → Import. Three tabs:
 
 New users go through a guided multi-step onboarding before reaching the dashboard:
 
-1. **Welcome** — brief intro to FinGrid
+1. **Welcome** — brief intro to myFinGrid
 2. **Profile** — name and basic details
 3. **Income** — monthly take-home salary
 4. **Commitments** — fixed monthly expenses (rent, EMIs)
@@ -288,11 +288,11 @@ fingrid/
 │   │   ├── budget-engine.ts
 │   │   ├── analytics-engine.ts
 │   │   ├── financial-email-parser.ts  # AI + regex parser for Indian bank emails
-│   │   ├── merchant-category-rules.ts # Merchant → FinGrid category rule engine
+│   │   ├── merchant-category-rules.ts # Merchant → myFinGrid category rule engine
 │   │   ├── gmail-parser-engine.ts
 │   │   └── sms-parser-engine.ts
 │   └── utils/
-│       ├── category-mapper.ts         # FinGrid → CredWise category mapping
+│       ├── category-mapper.ts         # myFinGrid → CredWise category mapping
 │       ├── spend-inference.ts         # Auto-infer spend from transactions
 │       ├── email-auto-assign.ts       # Assign parsed emails to categories
 │       └── currency.ts                # toPaise / toRupees helpers

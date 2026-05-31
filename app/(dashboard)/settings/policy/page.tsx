@@ -12,7 +12,7 @@ const TABS: { id: Tab; label: string; icon: React.ComponentType<{ className?: st
   { id: 'cookies', label: 'Cookies', icon: Cookie },
 ]
 
-// FinGrid is operated from India; data resides in Supabase (ap-south-1 / Mumbai).
+// myFinGrid is operated from India; data resides in Supabase (ap-south-1 / Mumbai).
 const LAST_UPDATED = 'May 2026'
 
 export default function PolicyPage() {
@@ -24,7 +24,7 @@ export default function PolicyPage() {
       <div className="flex flex-col gap-4 md:gap-6 px-4 md:px-6 lg:px-8 py-4 md:py-6 max-w-2xl mx-auto w-full">
         <div>
           <h2 className="text-xl font-semibold text-zinc-100">Privacy &amp; Terms</h2>
-          <p className="text-sm text-zinc-400 mt-0.5">How FinGrid handles your data, and the terms of use.</p>
+          <p className="text-sm text-zinc-400 mt-0.5">How myFinGrid handles your data, and the terms of use.</p>
         </div>
 
         {/* Tab switch */}
@@ -82,7 +82,7 @@ function PrivacyPolicy() {
   return (
     <>
       <Section title="What we collect">
-        <p>FinGrid collects only what it needs to run your money dashboard:</p>
+        <p>myFinGrid collects only what it needs to run your money dashboard:</p>
         <Bullets
           items={[
             'Account identity: your name and email address, managed by our auth provider (Clerk).',
@@ -115,13 +115,13 @@ function PrivacyPolicy() {
       <Section title="Your rights">
         <p>
           You can view and edit your data in the app at any time. To export or permanently delete everything, delete your
-          account from the account menu — this removes your identity at Clerk and cascades a deletion of all your FinGrid
+          account from the account menu — this removes your identity at Clerk and cascades a deletion of all your myFinGrid
           records (transactions, budgets, goals, and split data).
         </p>
       </Section>
 
       <Section title="Contact">
-        <p>Questions about your data? Reach out to the address associated with your FinGrid account support.</p>
+        <p>Questions about your data? Reach out to the address associated with your myFinGrid account support.</p>
       </Section>
     </>
   )
@@ -131,12 +131,12 @@ function TermsOfService() {
   return (
     <>
       <Section title="Acceptance">
-        <p>By using FinGrid you agree to these terms. If you do not agree, please discontinue use of the app.</p>
+        <p>By using myFinGrid you agree to these terms. If you do not agree, please discontinue use of the app.</p>
       </Section>
 
-      <Section title="What FinGrid is">
+      <Section title="What myFinGrid is">
         <p>
-          FinGrid is a personal-finance tracking and planning tool. Its projections, AI insights, and recommendations are
+          myFinGrid is a personal-finance tracking and planning tool. Its projections, AI insights, and recommendations are
           informational only and are <strong>not financial, investment, tax, or legal advice</strong>. You are responsible
           for your own financial decisions.
         </p>
@@ -161,7 +161,7 @@ function TermsOfService() {
 
       <Section title="Limitation of liability">
         <p>
-          To the maximum extent permitted by law, FinGrid is not liable for any losses arising from financial decisions made
+          To the maximum extent permitted by law, myFinGrid is not liable for any losses arising from financial decisions made
           using the app, or from any interruption, error, or data loss in the service.
         </p>
       </Section>
@@ -173,7 +173,7 @@ function CookiePolicy() {
   return (
     <>
       <Section title="What we use">
-        <p>FinGrid keeps cookie use to a minimum. We currently use only strictly-necessary cookies:</p>
+        <p>myFinGrid keeps cookie use to a minimum. We currently use only strictly-necessary cookies:</p>
         <Bullets
           items={[
             'Authentication & session cookies set by Clerk to keep you securely logged in.',
@@ -192,7 +192,7 @@ function CookiePolicy() {
       <Section title="Managing cookies">
         <p>
           Because the cookies above are essential to logging in and protecting the service, disabling them in your browser
-          may prevent FinGrid from working. You can clear cookies anytime via your browser settings.
+          may prevent myFinGrid from working. You can clear cookies anytime via your browser settings.
         </p>
       </Section>
     </>
