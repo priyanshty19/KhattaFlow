@@ -39,7 +39,7 @@ export function TopBar({ title, month, onMonthChange, actions, showQuickAdd = tr
       <div className={cn('flex items-center justify-between h-full w-full mx-auto', maxWidth)}>
         {/* Left: logo (mobile) + title + month */}
         <div className="flex items-center gap-2 md:gap-4 min-w-0">
-          {/* myFinGrid logo — mobile only */}
+          {/* MyFinGrid logo — mobile only */}
           <div className="flex md:hidden shrink-0">
             <Logo size="sm" href="/" />
           </div>

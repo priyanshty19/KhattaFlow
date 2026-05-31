@@ -5,7 +5,7 @@ import { Cookie, X } from 'lucide-react'
 
 const STORAGE_KEY = 'fingrid_cookie_consent'
 
-// Informational, non-blocking cookie notice. myFinGrid currently sets only
+// Informational, non-blocking cookie notice. MyFinGrid currently sets only
 // strictly-necessary cookies (Clerk auth + Turnstile) and no analytics/ad
 // trackers, so this is an acknowledgement — it never gates app usage. The choice
 // is persisted in localStorage (no cookie, no server round-trip).
@@ -41,7 +41,7 @@ export function CookieConsent() {
         <div className="flex items-start gap-2.5 flex-1 min-w-0">
           <Cookie className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
           <p className="text-xs text-zinc-300 leading-relaxed">
-            myFinGrid uses only essential cookies to keep you signed in securely. We don&apos;t use tracking or advertising
+            MyFinGrid uses only essential cookies to keep you signed in securely. We don&apos;t use tracking or advertising
             cookies.{' '}
             <Link href={'/settings/policy' as any} className="text-emerald-400 hover:text-emerald-300 underline">
               Learn more

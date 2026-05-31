@@ -222,7 +222,7 @@ export function CSVImportFlow() {
               <CheckCircle className="w-8 h-8 text-white" />
             </div>
             <h3 className="text-xl font-semibold text-zinc-100 mb-2">{importCount} transactions imported</h3>
-            <p className="text-sm text-zinc-500 mb-8">Your historical data is now in myFinGrid.</p>
+            <p className="text-sm text-zinc-500 mb-8">Your historical data is now in MyFinGrid.</p>
             <div className="flex gap-3">
               <button onClick={reset} className="px-5 py-3 border border-zinc-800 text-zinc-400 hover:text-zinc-200 rounded-xl text-sm transition-colors">Import another</button>
               <button onClick={() => router.push('/transactions')}

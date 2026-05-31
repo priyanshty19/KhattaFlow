@@ -5,7 +5,7 @@ import { TermsOfService } from '@/components/legal/policy-content'
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
-  description: 'The terms governing your use of myFinGrid.',
+  description: 'The terms governing your use of MyFinGrid.',
   alternates: { canonical: '/terms' },
 }
 

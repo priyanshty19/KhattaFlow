@@ -7,10 +7,10 @@ import { Toaster } from 'sonner'
 import { QueryProvider } from '@/components/providers/QueryProvider'
 import './globals.css'
 
-const APP_NAME = 'myFinGrid'
+const APP_NAME = 'MyFinGrid'
 const APP_TAGLINE = 'Your modern financial operating system'
 const APP_DESCRIPTION =
-  'myFinGrid is a modern financial operating system — track your wealth, discover opportunities, manage investments, improve credit access, and get personalized financial guidance in one intelligent dashboard.'
+  'MyFinGrid is a modern financial operating system — track your wealth, discover opportunities, manage investments, improve credit access, and get personalized financial guidance in one intelligent dashboard.'
 const APP_URL = 'https://myfingrid.com'
 
 export const metadata: Metadata = {
@@ -22,9 +22,15 @@ export const metadata: Metadata = {
   description: APP_DESCRIPTION,
   applicationName: APP_NAME,
   keywords: [
-    'myFinGrid', 'personal finance', 'wealth tracking', 'financial operating system',
+    'MyFinGrid', 'personal finance', 'wealth tracking', 'financial operating system',
     'investments', 'budgeting', 'credit cards', 'money dashboard',
   ],
+  alternates: { canonical: '/' },
+  icons: {
+    icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
+    shortcut: ['/icon.svg'],
+    apple: [{ url: '/icon.svg' }],
+  },
   openGraph: {
     type: 'website',
     siteName: APP_NAME,
@@ -39,6 +45,23 @@ export const metadata: Metadata = {
   },
 }
 
+// Structured data (JSON-LD) — Organization + WebSite for brand identity in SERPs.
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: APP_NAME,
+    url: APP_URL,
+    logo: `${APP_URL}/icon.svg`,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: APP_NAME,
+    url: APP_URL,
+  },
+]
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider
@@ -48,6 +71,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
         <body className="bg-background text-foreground antialiased">
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          />
           <QueryProvider>
             {children}
             <Toaster

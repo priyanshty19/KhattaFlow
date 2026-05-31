@@ -16,7 +16,7 @@ export default function ImportPage() {
       toast.error(detail ? `Gmail auth failed: ${detail}` : 'Gmail connection failed. Please try again.', { duration: 10000 })
     }
     if (searchParams.get('error') === 'gmail_user_not_found') {
-      toast.error('Gmail account does not match your myFinGrid account.')
+      toast.error('Gmail account does not match your MyFinGrid account.')
     }
   }, [searchParams])
 
