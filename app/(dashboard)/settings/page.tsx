@@ -30,7 +30,7 @@ export default function SettingsPage() {
         { duration: 10000 }
       )
     } else if (err === 'gmail_user_not_found') {
-      toast.error('Gmail account not found in myFinGrid. Try signing in again.')
+      toast.error('Gmail account not found in MyFinGrid. Try signing in again.')
     }
     if (connected === 'gmail') {
       toast.success('Gmail connected successfully')

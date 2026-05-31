@@ -11,7 +11,7 @@ export type NotificationType =
   | 'settlement_reminder'
 
 export interface NotificationInput {
-  userId: string // recipient myFinGrid (Clerk) userId
+  userId: string // recipient MyFinGrid (Clerk) userId
   type: NotificationType
   title: string
   body?: string
@@ -40,7 +40,7 @@ export async function createNotification(input: NotificationInput) {
 
 /**
  * Create many notifications at once (e.g. notify every group member of a new expense).
- * Recipients without a linked myFinGrid user row are skipped. Never throws.
+ * Recipients without a linked MyFinGrid user row are skipped. Never throws.
  */
 export async function createNotifications(inputs: NotificationInput[]) {
   const valid = inputs.filter((i) => !!i.userId)

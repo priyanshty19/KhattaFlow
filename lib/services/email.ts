@@ -26,10 +26,10 @@ export async function sendSplitInviteEmail(params: {
     body: JSON.stringify({
       from,
       to,
-      subject: `${inviterName} invited you to "${groupName}" on myFinGrid`,
+      subject: `${inviterName} invited you to "${groupName}" on MyFinGrid`,
       html: `
         <div style="font-family:sans-serif;max-width:440px;margin:0 auto;padding:24px">
-          <h2 style="color:#10b981;margin-bottom:8px">myFinGrid · Split &amp; Share</h2>
+          <h2 style="color:#10b981;margin-bottom:8px">MyFinGrid · Split &amp; Share</h2>
           <p style="color:#52525b;margin-bottom:20px">
             <strong>${inviterName}</strong> invited you to join the group
             <strong>${groupName}</strong> to split expenses together.
@@ -72,10 +72,10 @@ export async function sendOtpEmail(to: string, otp: string): Promise<void> {
     body: JSON.stringify({
       from,
       to,
-      subject: 'Your myFinGrid verification code',
+      subject: 'Your MyFinGrid verification code',
       html: `
         <div style="font-family:sans-serif;max-width:400px;margin:0 auto;padding:24px">
-          <h2 style="color:#10b981;margin-bottom:8px">myFinGrid</h2>
+          <h2 style="color:#10b981;margin-bottom:8px">MyFinGrid</h2>
           <p style="color:#71717a;margin-bottom:24px">Someone requested access to your financial data.</p>
           <div style="background:#f4f4f5;border-radius:12px;padding:24px;text-align:center">
             <span style="font-size:32px;font-weight:700;letter-spacing:8px;color:#18181b">${otp}</span>

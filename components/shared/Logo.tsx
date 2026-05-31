@@ -2,14 +2,14 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils/cn'
 
 /**
- * myFinGrid brand logo — a single source of truth for the wordmark + mark.
+ * MyFinGrid brand logo — a single source of truth for the wordmark + mark.
  *
  * Mark concept ("Forward Leaf"): a purple→blue forward triangle (play /
  * momentum) paired with a green→teal growth flame, offset on a rising
  * diagonal — plan & invest moving forward, growth lifting up. No dollar/
  * rupee/coin clichés, in the spirit of Linear / Ramp / Mercury marks.
  *
- * Wordmark is two-tone: a muted "my" (personal ownership) + a solid "FinGrid".
+ * Wordmark is two-tone: a muted "My" (personal ownership) + a solid "FinGrid".
  */
 
 type LogoSize = 'sm' | 'md' | 'lg'
@@ -31,7 +31,7 @@ export function LogoMark({ size = 'md', className }: { size?: LogoSize; classNam
       viewBox="219 135 680 680"
       fill="none"
       role="img"
-      aria-label="myFinGrid"
+      aria-label="MyFinGrid"
       className={cn('shrink-0', className)}
     >
       {/* Forward triangle (play / momentum), tilted up-right */}
@@ -62,7 +62,7 @@ export function LogoMark({ size = 'md', className }: { size?: LogoSize; classNam
 export function LogoWordmark({ size = 'md', className }: { size?: LogoSize; className?: string }) {
   return (
     <span className={cn('font-semibold tracking-tight', TEXT_CLS[size], className)}>
-      <span className="text-zinc-400">my</span>
+      <span className="text-zinc-400">My</span>
       <span className="text-zinc-100">FinGrid</span>
     </span>
   )
@@ -92,7 +92,7 @@ export function Logo({
 
   if (href === null) return inner
   return (
-    <Link href={href as any} className="inline-flex items-center" aria-label="myFinGrid home">
+    <Link href={href as any} className="inline-flex items-center" aria-label="MyFinGrid home">
       {inner}
     </Link>
   )

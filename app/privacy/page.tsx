@@ -5,7 +5,7 @@ import { PrivacyPolicy, CookiePolicy } from '@/components/legal/policy-content'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
-  description: 'How myFinGrid collects, stores, and uses your data — including read-only Gmail access for transaction import.',
+  description: 'How MyFinGrid collects, stores, and uses your data — including read-only Gmail access for transaction import.',
   alternates: { canonical: '/privacy' },
 }
 

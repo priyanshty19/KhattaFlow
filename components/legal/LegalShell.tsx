@@ -29,7 +29,7 @@ export function LegalShell({ title, children }: { title: string; children: React
         </div>
 
         <p className="text-xs text-zinc-600 mt-8 text-center">
-          © {new Date().getFullYear()} myFinGrid ·{' '}
+          © {new Date().getFullYear()} MyFinGrid ·{' '}
           <Link href={'/landing' as any} className="hover:text-zinc-400 transition-colors">Home</Link>
         </p>
       </div>

@@ -35,7 +35,7 @@ const csp = [
   // Without challenges.cloudflare.com in worker-src the worker is killed silently
   // and the CAPTCHA token is never generated — causing the desktop form to hang.
   "worker-src 'self' blob: https://challenges.cloudflare.com",
-  // Clickjacking: FinGrid is never legitimately embedded in another site's frame.
+  // Clickjacking: MyFinGrid is never legitimately embedded in another site's frame.
   "frame-ancestors 'none'",
 ].join('; ')
 
