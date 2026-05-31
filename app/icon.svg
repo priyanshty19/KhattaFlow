@@ -1,16 +1,18 @@
-<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- myFinGrid favicon — "Forward Leaf" mark (monochrome white) on a dark tile -->
   <defs>
-    <linearGradient id="t" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#10b981"/>
-      <stop offset="1" stop-color="#059669"/>
+    <linearGradient id="t" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1c1c21"/>
+      <stop offset="1" stop-color="#0a0a0b"/>
     </linearGradient>
   </defs>
-  <rect width="32" height="32" rx="8.5" fill="url(#t)"/>
-  <!-- M·F·G monogram: M rising peaks + G hooked terminal -->
-  <g stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none">
-    <path d="M10 24 L10 10 L16 17 L22 10"/>
-    <path d="M22 10 L22 21.5 L17 21.5"/>
+  <rect width="1024" height="1024" rx="230" fill="url(#t)"/>
+  <g transform="rotate(-9 470 560)">
+    <path d="M330 390 L330 730 L600 560 Z"
+          fill="#ffffff" stroke="#ffffff" stroke-width="58"
+          stroke-linejoin="round" stroke-linecap="round"/>
   </g>
-  <!-- F: crossbar arm on the left stem -->
-  <rect x="10" y="14.7" width="6.4" height="2.3" rx="1.15" fill="#ffffff"/>
+  <path d="M724 182 C832 286 820 416 662 476 C654 384 646 276 724 182 Z"
+        fill="#ffffff" stroke="#ffffff" stroke-width="20"
+        stroke-linejoin="round" stroke-linecap="round"/>
 </svg>

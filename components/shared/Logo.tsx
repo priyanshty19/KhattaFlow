@@ -4,10 +4,10 @@ import { cn } from '@/lib/utils/cn'
 /**
  * myFinGrid brand logo — a single source of truth for the wordmark + mark.
  *
- * Mark concept ("M·F·G monogram"): one continuous gesture in which the rising
- * twin peaks read as **M** (my + momentum), the crossbar arm as **F**, and the
- * hooked right terminal as **G**. Wealth-building motion without dollar/rupee/
- * coin clichés, in the spirit of Linear / Ramp / Mercury marks.
+ * Mark concept ("Forward Leaf"): a purple→blue forward triangle (play /
+ * momentum) paired with a green→teal growth flame, offset on a rising
+ * diagonal — plan & invest moving forward, growth lifting up. No dollar/
+ * rupee/coin clichés, in the spirit of Linear / Ramp / Mercury marks.
  *
  * Wordmark is two-tone: a muted "my" (personal ownership) + a solid "FinGrid".
  */
@@ -21,42 +21,39 @@ const TEXT_CLS: Record<LogoSize, string> = {
   lg: 'text-xl',
 }
 
-/** The mark only — a rounded emerald tile with the M·F·G monogram. */
+/** The mark only — the Forward-Leaf dual shape on a transparent ground. */
 export function LogoMark({ size = 'md', className }: { size?: LogoSize; className?: string }) {
   const px = MARK_PX[size]
   return (
     <svg
       width={px}
       height={px}
-      viewBox="0 0 32 32"
+      viewBox="219 135 680 680"
       fill="none"
       role="img"
       aria-label="myFinGrid"
       className={cn('shrink-0', className)}
     >
-      <defs>
-        <linearGradient id="mfg-tile" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#10b981" />
-          <stop offset="1" stopColor="#059669" />
-        </linearGradient>
-      </defs>
-
-      {/* Rounded tile */}
-      <rect width="32" height="32" rx="8.5" fill="url(#mfg-tile)" />
-
-      {/* Monogram: M rising peaks + G hooked terminal */}
-      <g
-        stroke="#ffffff"
-        strokeWidth="2.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      >
-        <path d="M10 24 L10 10 L16 17 L22 10" />
-        <path d="M22 10 L22 21.5 L17 21.5" />
+      {/* Forward triangle (play / momentum), tilted up-right */}
+      <g transform="rotate(-9 470 560)">
+        <path
+          d="M330 390 L330 730 L600 560 Z"
+          fill="#ffffff"
+          stroke="#ffffff"
+          strokeWidth="58"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
       </g>
-      {/* F: crossbar arm on the left stem */}
-      <rect x="10" y="14.7" width="6.4" height="2.3" rx="1.15" fill="#ffffff" />
+      {/* Growth flame (leaf / ascent), upper-right */}
+      <path
+        d="M724 182 C832 286 820 416 662 476 C654 384 646 276 724 182 Z"
+        fill="#ffffff"
+        stroke="#ffffff"
+        strokeWidth="20"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
     </svg>
   )
 }
