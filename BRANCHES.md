@@ -4,6 +4,7 @@ Full history of every branch created, updated, and merged in this repo.
 
 | Date | Branch | Event | Actor | PR | Notes |
 |------|--------|-------|-------|----|-------|
+| 2026-05-31 | `fix/jsonld-graph-signin-crash` | ✅ Created | @priyanshty19 | — | — |
 | 2026-05-31 | `fix/jsonld-graph-signin-crash` | 📤 Pushed | @priyanshty19 | — | — |
 | 2026-05-31 | `feat/seo-sitemap-robots-metadata` | 🚀 Merged | @priyanshty19 | [#40](https://github.com/priyanshty19/fingrid/pull/40) | [FEAT] Feat/Seo Sitemap Robots Metadata |
 | 2026-05-31 | `feat/seo-sitemap-robots-metadata` | 📤 Pushed | @priyanshty19 | — | — |
