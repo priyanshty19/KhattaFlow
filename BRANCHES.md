@@ -4,6 +4,7 @@ Full history of every branch created, updated, and merged in this repo.
 
 | Date | Branch | Event | Actor | PR | Notes |
 |------|--------|-------|-------|----|-------|
+| 2026-05-31 | `feat/public-legal-pages` | ✅ Created | @priyanshty19 | — | — |
 | 2026-05-31 | `Rebranding-myFinGrid` | 🚀 Merged | @priyanshty19 | [#37](https://github.com/priyanshty19/fingrid/pull/37) | Rebrand to myFinGrid + M·F·G monogram logo system |
 | 2026-05-31 | `Rebranding-myFinGrid` | 📤 Pushed | @priyanshty19 | — | — |
 | 2026-05-30 | `feat/gmail-manual-connect` | 🚀 Merged | @priyanshty19 | [#36](https://github.com/priyanshty19/fingrid/pull/36) | feat(gmail): make Gmail sync opt-in, remove automatic fetch |
