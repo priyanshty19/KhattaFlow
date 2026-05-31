@@ -46,21 +46,27 @@ export const metadata: Metadata = {
 }
 
 // Structured data (JSON-LD) — Organization + WebSite for brand identity in SERPs.
-const jsonLd = [
-  {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: APP_NAME,
-    url: APP_URL,
-    logo: `${APP_URL}/icon.svg`,
-  },
-  {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    name: APP_NAME,
-    url: APP_URL,
-  },
-]
+// Emitted as a single @context object with an @graph array (Google's recommended
+// form for multiple entities). A top-level *array* breaks consumers that read every
+// ld+json block as `parsed["@context"].toLowerCase()` — on an array that is undefined,
+// which threw an uncaught TypeError during page bootstrap and blocked Clerk's sign-in
+// widget ("Unable to complete action at this time"). @graph keeps one top-level @context.
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      name: APP_NAME,
+      url: APP_URL,
+      logo: `${APP_URL}/icon.svg`,
+    },
+    {
+      '@type': 'WebSite',
+      name: APP_NAME,
+      url: APP_URL,
+    },
+  ],
+}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
