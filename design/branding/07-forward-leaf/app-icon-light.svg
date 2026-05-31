@@ -1,0 +1,26 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- myFinGrid · Concept 7 "Forward Leaf" — light app-icon tile -->
+  <defs>
+    <linearGradient id="fl-tile-light" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#eef0f3"/>
+    </linearGradient>
+    <linearGradient id="fl-purple-l" x1="330" y1="380" x2="560" y2="740" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#a78bfa"/>
+      <stop offset="1" stop-color="#3b6ef5"/>
+    </linearGradient>
+    <linearGradient id="fl-green-l" x1="730" y1="170" x2="640" y2="500" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4ade80"/>
+      <stop offset="1" stop-color="#1fc7b6"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="230" fill="url(#fl-tile-light)"/>
+  <g transform="rotate(-9 470 560)">
+    <path d="M330 390 L330 730 L600 560 Z"
+          fill="url(#fl-purple-l)" stroke="url(#fl-purple-l)" stroke-width="58"
+          stroke-linejoin="round" stroke-linecap="round"/>
+  </g>
+  <path d="M724 182 C832 286 820 416 662 476 C654 384 646 276 724 182 Z"
+        fill="url(#fl-green-l)" stroke="url(#fl-green-l)" stroke-width="20"
+        stroke-linejoin="round" stroke-linecap="round"/>
+</svg>
