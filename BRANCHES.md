@@ -4,6 +4,7 @@ Full history of every branch created, updated, and merged in this repo.
 
 | Date | Branch | Event | Actor | PR | Notes |
 |------|--------|-------|-------|----|-------|
+| 2026-05-31 | `feat/seo-sitemap-robots-metadata` | 📤 Pushed | @priyanshty19 | — | — |
 | 2026-05-31 | `feat/forward-leaf-brand` | 🚀 Merged | @priyanshty19 | [#39](https://github.com/priyanshty19/fingrid/pull/39) | [FEAT] Feat/Forward Leaf Brand |
 | 2026-05-31 | `feat/forward-leaf-brand` | ✅ Created | @priyanshty19 | — | — |
 | 2026-05-31 | `feat/public-legal-pages` | 🚀 Merged | @priyanshty19 | [#38](https://github.com/priyanshty19/fingrid/pull/38) | Public /privacy + /terms pages for Google OAuth verification |
