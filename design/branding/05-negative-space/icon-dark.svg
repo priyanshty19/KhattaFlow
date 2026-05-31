@@ -1,0 +1,22 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- myFinGrid · Concept 5 — Hidden-grid negative space · DARK (on dark canvas) -->
+  <!-- A solid emerald grid-tile; the ascending arrow + grid seams are carved as negative space. -->
+  <defs>
+    <linearGradient id="g5d" x1="8" y1="56" x2="56" y2="8" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#34d399"/>
+      <stop offset="1" stop-color="#059669"/>
+    </linearGradient>
+    <mask id="m5d">
+      <rect x="8" y="8" width="48" height="48" rx="13" fill="#fff"/>
+      <!-- grid seams (negative space) -->
+      <line x1="24" y1="10" x2="24" y2="54" stroke="#000" stroke-width="2.4"/>
+      <line x1="40" y1="10" x2="40" y2="54" stroke="#000" stroke-width="2.4"/>
+      <line x1="10" y1="24" x2="54" y2="24" stroke="#000" stroke-width="2.4"/>
+      <line x1="10" y1="40" x2="54" y2="40" stroke="#000" stroke-width="2.4"/>
+      <!-- hidden ascending arrow carved out -->
+      <path d="M18 46 L32 32 L46 18" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M36 18 L46 18 L46 28" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </mask>
+  </defs>
+  <rect x="8" y="8" width="48" height="48" rx="13" fill="url(#g5d)" mask="url(#m5d)"/>
+</svg>

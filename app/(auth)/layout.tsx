@@ -1,23 +1,6 @@
 import type { ReactNode } from 'react'
 import { TrendingUp, Brain, CreditCard, ArrowUpRight } from 'lucide-react'
-
-/* ─── Shared logo mark ─────────────────────────────────────── */
-function LogoMark({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
-  const box = size === 'lg' ? 'w-10 h-10' : size === 'sm' ? 'w-7 h-7' : 'w-9 h-9'
-  const icon = size === 'lg' ? 'w-5 h-5' : size === 'sm' ? 'w-3.5 h-3.5' : 'w-5 h-5'
-  const text = size === 'lg' ? 'text-xl' : size === 'sm' ? 'text-sm' : 'text-lg'
-  return (
-    <div className="flex items-center gap-2.5">
-      <div className={`${box} rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/25 shrink-0`}>
-        <svg className={`${icon} text-white`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-        </svg>
-      </div>
-      <span className={`${text} font-semibold text-zinc-100 tracking-tight`}>FinGrid</span>
-    </div>
-  )
-}
+import { Logo } from '@/components/shared/Logo'
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
@@ -35,7 +18,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           style={{ backgroundImage: 'radial-gradient(circle, #3f3f46 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
 
         <div className="relative z-10 flex flex-col items-center text-center gap-4">
-          <LogoMark size="lg" />
+          <Logo size="lg" href={null} />
           <div>
             <h1 className="text-2xl font-bold text-zinc-100 leading-snug">
               Your finances,<br />finally clear.
@@ -92,7 +75,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
           {/* Top — logo */}
           <div className="relative z-10">
-            <LogoMark size="md" />
+            <Logo size="md" href={null} />
           </div>
 
           {/* Middle — tagline + mock cards */}

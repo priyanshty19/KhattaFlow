@@ -3,9 +3,10 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Home, ArrowLeftRight, PieChart, Target,
-  CreditCard, Plus, Wallet, Rocket, Users, UserCircle,
+  CreditCard, Plus, Rocket, Users, UserCircle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
+import { Logo } from '@/components/shared/Logo'
 import { useUIStore } from '@/stores/ui.store'
 
 type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }> }
@@ -53,11 +54,8 @@ export function Sidebar() {
   return (
     <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 z-40 flex-col bg-zinc-950 border-r border-zinc-600/40">
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-5 py-6">
-        <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center shrink-0">
-          <Wallet className="w-4 h-4 text-white" />
-        </div>
-        <span className="font-bold text-base text-emerald-400 tracking-tight">FinGrid</span>
+      <div className="px-5 py-6">
+        <Logo size="md" href="/" />
       </div>
 
       {/* Nav */}

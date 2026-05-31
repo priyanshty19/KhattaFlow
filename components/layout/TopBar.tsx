@@ -1,5 +1,6 @@
 'use client'
-import { Plus, Wallet } from 'lucide-react'
+import { Plus } from 'lucide-react'
+import { Logo } from '@/components/shared/Logo'
 import { MonthSelector } from '@/components/shared/MonthSelector'
 import { NotificationCenter } from '@/components/layout/NotificationCenter'
 import { cn } from '@/lib/utils/cn'
@@ -38,12 +39,9 @@ export function TopBar({ title, month, onMonthChange, actions, showQuickAdd = tr
       <div className={cn('flex items-center justify-between h-full w-full mx-auto', maxWidth)}>
         {/* Left: logo (mobile) + title + month */}
         <div className="flex items-center gap-2 md:gap-4 min-w-0">
-          {/* FinGrid logo — mobile only */}
-          <div className="flex md:hidden items-center gap-1.5 shrink-0">
-            <div className="w-6 h-6 rounded-md bg-emerald-500 flex items-center justify-center">
-              <Wallet className="w-3.5 h-3.5 text-white" />
-            </div>
-            <span className="font-bold text-sm text-emerald-400 tracking-tight">FinGrid</span>
+          {/* myFinGrid logo — mobile only */}
+          <div className="flex md:hidden shrink-0">
+            <Logo size="sm" href="/" />
           </div>
           {/* Page title — desktop only */}
           <h1 className="hidden md:block font-semibold text-base text-emerald-400 tracking-tight shrink-0">{title}</h1>

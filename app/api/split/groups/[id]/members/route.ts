@@ -78,7 +78,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   })
 
   const inviteUrl = `${getBaseUrl(req)}/split/invite/${invite.token}`
-  const inviterName = access.member.name || 'A FinGrid user'
+  const inviterName = access.member.name || 'A myFinGrid user'
   let emailSent = false
   try {
     emailSent = await sendSplitInviteEmail({ to: email, groupName: group.name, inviterName, inviteUrl })

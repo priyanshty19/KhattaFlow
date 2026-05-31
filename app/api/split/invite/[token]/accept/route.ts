@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 // app/api/split/invite/[token]/accept/route.ts
 // Accept a Split & Share invite. Idempotent and safe to re-call.
-//   - NEW FinGrid user (no users row yet): link membership → deep-link into the group.
+//   - NEW myFinGrid user (no users row yet): link membership → deep-link into the group.
 //   - EXISTING user: link membership + create a notification → land on the dashboard.
 // Does NOT touch the onboarding email-migration re-key/delete logic.
 import { auth, currentUser } from '@clerk/nextjs/server'

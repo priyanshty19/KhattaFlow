@@ -1,0 +1,16 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="t" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10b981"/>
+      <stop offset="1" stop-color="#059669"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="8.5" fill="url(#t)"/>
+  <!-- M·F·G monogram: M rising peaks + G hooked terminal -->
+  <g stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M10 24 L10 10 L16 17 L22 10"/>
+    <path d="M22 10 L22 21.5 L17 21.5"/>
+  </g>
+  <!-- F: crossbar arm on the left stem -->
+  <rect x="10" y="14.7" width="6.4" height="2.3" rx="1.15" fill="#ffffff"/>
+</svg>

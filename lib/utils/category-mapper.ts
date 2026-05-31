@@ -1,4 +1,4 @@
-// Maps FinGrid category names/slugs to CredWise reward category keys
+// Maps myFinGrid category names/slugs to CredWise reward category keys
 
 const MAPPINGS: Array<{ patterns: string[]; rewardKey: string }> = [
   { patterns: ['food', 'dining', 'restaurant', 'eat', 'meal', 'cafe', 'zomato', 'swiggy'], rewardKey: 'Dining' },
