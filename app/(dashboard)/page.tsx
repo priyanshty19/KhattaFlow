@@ -9,6 +9,7 @@ import { DashboardGoalBand } from '@/components/domain/dashboard/DashboardGoalBa
 import { DashboardSplitSummary } from '@/components/domain/dashboard/DashboardSplitSummary'
 import { DashboardBudgetZone } from '@/components/domain/dashboard/DashboardBudgetZone'
 import { DashboardInsightZone } from '@/components/domain/dashboard/DashboardInsightZone'
+import { CreditCardWidget } from '@/components/domain/credit-cards/CreditCardWidget'
 import { StatCardSkeleton } from '@/components/shared/Skeletons'
 
 export default function DashboardPage() {
@@ -27,6 +28,9 @@ export default function DashboardPage() {
         <Suspense fallback={<StatCardSkeleton />}>
           <DashboardPulse month={month} />
         </Suspense>
+
+        {/* CredWise — best-card recommender, between the month summary and goals */}
+        <CreditCardWidget />
 
         {/* Forward-looking band: goals + shared money */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">

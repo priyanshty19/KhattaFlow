@@ -21,9 +21,9 @@ export function StatCard({ label, amount, subtext, trend, highlight, warning, ic
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.06, ease: 'easeOut' }}
-      className="bg-zinc-900 border border-zinc-600/40 rounded-xl p-5 hover:border-zinc-500/50 hover:bg-zinc-800/50 transition-all duration-200"
+      className="bg-zinc-900 border border-zinc-600/40 rounded-xl px-4 py-3.5 hover:border-zinc-500/50 hover:bg-zinc-800/50 transition-all duration-200"
     >
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2">
         <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">{label}</span>
         {Icon && (
           <div className={cn(
@@ -42,7 +42,7 @@ export function StatCard({ label, amount, subtext, trend, highlight, warning, ic
         amount={amount}
         size="xl"
         colorCoded={warning || highlight}
-        className="block mb-2"
+        className="block mb-1"
       />
 
       <div className="flex items-center gap-2">
